@@ -1,0 +1,21 @@
+<h1>Stats</h1>
+<table class="table table-condensed">
+    <tbody>
+        <tr>
+            <th> </th>
+            <th colspan="3" ng-repeat="user in users">{{user}}</th>
+        </tr>
+        <tr>
+            <th> </th>
+            <th ng-repeat-start="user in users">PRs</th>
+            <th>Push</th>
+            <th ng-repeat-end>Coms/Push</th>
+        </tr>
+        <tr ng-repeat="key in statisticsOrder">
+            <th>{{key}}</th>
+            <td ng-repeat-start="user in users">{{statistics[key][user].pullRequests}}</td>
+            <td>{{statistics[key][user].pushRequests.pushes}}</td>
+            <td ng-repeat-end>{{statistics[key][user].pushRequests.commits}}</td>
+        </tr>
+    </tbody>
+</table>

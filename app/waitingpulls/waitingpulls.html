@@ -1,0 +1,11 @@
+<h1>Waiting Pull Requests </h1>
+
+<div ng-repeat="pullRequestsBreakdown in pullRequestsBreakdowns" class="pullRequestBreakdown">
+    <h2><a href="{{pullRequestsBreakdown.htmlUrl}}" target="_blank"><img class="avatar" ng-src="{{pullRequestsBreakdown.avatarUrl}}">{{pullRequestsBreakdown.login}}</a> -  <a href="{{pullRequestsBreakdown.repositoryHtmlUrl }}" target="_blank">{{pullRequestsBreakdown.repositoryName }}</a></h2>
+    <div ng-repeat="pullRequest in pullRequestsBreakdown.pullRequests" class="pullRequest">
+        <span class="{{pullRequest.state}}"><a href="{{pullRequest.htmlUrl}}" target="_blank"><b>{{pullRequest.title}}:</b>{{pullRequest.body}}</a></span>
+    </div>
+</div>
+<div>
+    <img src="images/blank.jpg" class="{{timerClass}}" >
+</div>

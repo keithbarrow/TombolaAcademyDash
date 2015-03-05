@@ -1,0 +1,111 @@
+/* app css stylesheet */
+body{
+    background-color: #003466;
+    background-image: url("images/background.png");
+    background-repeat: repeat;
+    -webkit-animation-name: moveBackground; /* Chrome, Safari, Opera */
+    -webkit-animation-duration: 60s;
+    -webkit-animation-timing-function: linear; /* Chrome, Safari, Opera */
+    -webkit-animation-iteration-count: infinite;
+
+    animation-name: moveBackground;
+    animation-duration: 60s;
+    animation-timing-function: linear;
+    animation-iteration-count:infinite;
+}
+
+/* Chrome, Safari, Opera */
+@-webkit-keyframes moveBackground {
+    0%   {background-position: 0;}
+    100% {background-position: -8260px;}
+}
+
+/* Standard syntax */
+@keyframes moveBackground {
+    0%   {background-position: 0;}
+    100% {background-position: -8260px;}
+}
+
+
+a{
+  text-decoration:none;
+  color: #88CCCC;
+}
+a:hover{
+  color: #CC00CC;
+}
+.menu {
+  list-style: none;
+  border-bottom: 0.1em solid black;
+  margin-bottom: 2em;
+  padding: 0 0 0.5em;
+}
+
+.menu:before {
+  content: "[";
+}
+
+.menu:after {
+  content: "]";
+}
+
+.menu > li {
+  display: inline;
+}
+
+.menu > li:before {
+  content: "|";
+  padding-right: 0.3em;
+}
+
+.menu > li:nth-child(1):before {
+  content: "";
+  padding: 0;
+}
+
+img.avatar {
+  width: 50px;
+  height: 50px;
+  margin-right:25px;
+}
+
+.nyantimer{
+    position: relative;
+    -webkit-animation-name: moveNyan; /* Chrome, Safari, Opera */
+    -webkit-animation-duration: 300s;
+    -webkit-animation-timing-function: linear; /* Chrome, Safari, Opera */
+    -webkit-animation-iteration-count: infinite;
+
+    animation-name: moveNyan;
+    animation-duration: 300s;
+    animation-timing-function: linear;
+    animation-iteration-count:infinite;
+
+    background: url("images/nyan.png");
+    background-size: 1140px 80px;
+    background-repeat: no-repeat;
+    background-position: -1000px;
+    top:80px;
+    height: 80px;
+    width: 1140px;
+}
+
+/* Chrome, Safari, Opera */
+@-webkit-keyframes moveNyan {
+    0%   {background-position: -1000px;}
+    100% {background-position: 0px;}
+}
+
+/* Standard syntax */
+@keyframes moveNyan {
+    0%   {background-position: -1000px;}
+    100% {background-position: 0px;}
+}
+
+h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
+    color:#AAAAAA;
+}
+
+table{
+    color:#ddd;
+}
