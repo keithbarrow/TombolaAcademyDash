@@ -47,10 +47,14 @@ angular.module('Tombola.Academy.Dash.WaitingPulls', [])
   $scope.timerClass='';
 
   $scope.repositoriesToCheck = [
-    {username:'Davros2106',repositories:['NoughtsAndCrossesClient']},
-    {username:'Koolaidman64',repositories:['NoughtsAndCrosses']},
-    {username:'LewisGardner25',repositories:['NoughtsAndCrosses']},
-    {username:'SalamanderMan',repositories:['NoughtsAndCrosses']}
+        {username:'Davros2106',repositories:['NoughtsAndCrossesClient']},
+        {username:'Koolaidman64',repositories:['NoughtsAndCrosses']},
+        {username:'LewisGardner25',repositories:['NoughtsAndCrosses']},
+        {username:'SalamanderMan',repositories:['NoughtsAndCrosses']},
+
+        {username:'Matthew-Gilmore',repositories:['HendonHerald']},
+        {username:'JakeArkleyTombola',repositories:['HendonHerald']},
+        {username:'matthew-english',repositories:['css-tutorial']}
   ];
 
   var intervalPromise;
