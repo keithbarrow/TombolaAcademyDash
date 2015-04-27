@@ -226,7 +226,7 @@
     'use strict';
 
     angular.module('Tombola.Academy.Dash.Stats')
-        .controller('StatsController', ['$scope', '$http', '$q', 'GitHubUserProxy', function($scope, $http, $q, gitHubUserProxy) {
+        .controller('StatsController', ['$scope', '$http', '$q', 'GitHubUserProxy', 'UserInformation', function($scope, $http, $q, gitHubUserProxy, userInformation) {
             $scope.users = userInformation.users;
             $scope.statistics = {};
             $scope.statisticsOrder = [];
