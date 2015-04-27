@@ -1,15 +1,17 @@
-/* app css stylesheet */
+@duration: 60s;
+@nyanDuration: 300s;
+
 body{
     background-color: #003466;
     background-image: url("images/background.png");
     background-repeat: repeat;
     -webkit-animation-name: moveBackground; /* Chrome, Safari, Opera */
-    -webkit-animation-duration: 60s;
+    -webkit-animation-duration: @duration;
     -webkit-animation-timing-function: linear; /* Chrome, Safari, Opera */
     -webkit-animation-iteration-count: infinite;
 
     animation-name: moveBackground;
-    animation-duration: 60s;
+    animation-duration: @duration;
     animation-timing-function: linear;
     animation-iteration-count:infinite;
 }
@@ -30,37 +32,34 @@ body{
 a{
   text-decoration:none;
   color: #88CCCC;
+  &:hover{
+    color: #CC00CC;
+  }
 }
-a:hover{
-  color: #CC00CC;
-}
+
 .menu {
   list-style: none;
   border-bottom: 0.1em solid black;
   margin-bottom: 2em;
   padding: 0 0 0.5em;
-}
+  &:before {
+    content: "[";
+  }
+  &:after {
+    content: "]";
+  }
 
-.menu:before {
-  content: "[";
-}
-
-.menu:after {
-  content: "]";
-}
-
-.menu > li {
-  display: inline;
-}
-
-.menu > li:before {
-  content: "|";
-  padding-right: 0.3em;
-}
-
-.menu > li:nth-child(1):before {
-  content: "";
-  padding: 0;
+  > li {
+    display: inline;
+    &:before {
+      content: "|";
+      padding-right: 0.3em;
+    }
+    &:nth-child(1):before {
+      content: "";
+      padding: 0;
+    }
+  }
 }
 
 img.avatar {
@@ -72,12 +71,12 @@ img.avatar {
 .nyantimer{
     position: relative;
     -webkit-animation-name: moveNyan; /* Chrome, Safari, Opera */
-    -webkit-animation-duration: 300s;
+    -webkit-animation-duration: @nyanDuration;
     -webkit-animation-timing-function: linear; /* Chrome, Safari, Opera */
     -webkit-animation-iteration-count: infinite;
 
     animation-name: moveNyan;
-    animation-duration: 300s;
+    animation-duration: @nyanDuration;
     animation-timing-function: linear;
     animation-iteration-count:infinite;
 

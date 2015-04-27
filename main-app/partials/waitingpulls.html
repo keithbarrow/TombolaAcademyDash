@@ -1,0 +1,11 @@
+<h1>Waiting Pull Requests </h1>
+
+<div ng-repeat="waitingPull in (model.waitingPulls | orderBy: '-pullRequests[0].created' : true)" class="pullRequestBreakdown">
+    <h2><a href="{{waitingPull.htmlUrl}}" target="_blank"><img class="avatar" ng-src="{{waitingPull.avatarUrl}}">{{waitingPull.login}}</a> -  <a href="{{waitingPull.repositoryHtmlUrl }}" target="_blank">{{waitingPull.repositoryName }}</a></h2>
+    <div ng-repeat="pullRequest in (waitingPull.pullRequests | orderBy: '-created')" class="pullRequest">
+        <span class="{{pullRequest.state}}"><a href="{{pullRequest.htmlUrl}}" target="_blank"><b>{{pullRequest.created | date : 'dd MMM yyyy HH:mm:ss' }} {{pullRequest.title}}:</b>{{pullRequest.body}}</a></span>
+    </div>
+</div>
+<div>
+    <img src="images/blank.jpg" class="{{timerClass}}" >
+</div>
