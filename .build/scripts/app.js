@@ -1,5 +1,31 @@
 (function () {
     'use strict';
+
+    //TODO: Shift to somewhere sensible like a polyfill file...
+    // Production steps of ECMA-262, Edition 5, 15.4.4.14
+    if (!Array.prototype.findIndex) {
+        Array.prototype.findIndex = function(predicate) {
+            if (this === null) {
+                throw new TypeError('Array.prototype.findIndex called on null or undefined');
+            }
+            if (typeof predicate !== 'function') {
+                throw new TypeError('predicate must be a function');
+            }
+            var list = Object(this);
+            var length = list.length >>> 0;
+            var thisArg = arguments[1];
+            var value;
+
+            for (var i = 0; i < length; i++) {
+                value = list[i];
+                if (predicate.call(thisArg, value, i, list)) {
+                    return i;
+                }
+            }
+            return -1;
+        };
+    }
+
     angular.module('Tombola.Academy.Dash.TaProxy', []);
     angular.module('Tombola.Academy.Dash.GithubProxy', ['Tombola.Academy.Dash.GithubProxy']);
     angular.module('Tombola.Academy.Dash.WaitingPulls', ['Tombola.Academy.Dash.GithubProxy']);
@@ -54,9 +80,17 @@
 (function () {
     'use strict';
     angular.module('Tombola.Academy.Dash.GithubProxy')
-        .service('GitHubUserProxy',['$http', 'GithubConstants', function($http, githubConstants){
+        .service('GitHubUserProxy',['$http', '$q', 'UserStatsFactory', 'GithubConstants', function($http, $q, userStatsFactory, githubConstants){
         return function(username){
-            return $http.get(githubConstants.rootUrl + 'users/' + username + '/events'+ githubConstants.secret);
+            var deferred = $q.defer();
+            $http.get(githubConstants.rootUrl + 'users/' + username + '/events'+ githubConstants.secret)
+                .then(function(data){
+                    deferred.resolve(userStatsFactory(username, data.data));
+                })
+                .catch(function(){
+                    deferred.reject('User Proxy Error');
+                });
+            return deferred.promise;
         };
     }]);
 })();
@@ -186,7 +220,7 @@
 
 
     angular.module('Tombola.Academy.Dash.WaitingPulls')
-        .controller('WaitingPullsController', ['$scope', '$rootScope', '$http', '$interval', '$q', 'WaitingPullsModel', 'GithubRepoProxy', 'PullRequestInformationFactory', function ($scope, $rootScope, $http, $interval, $q, waitingPullsModel, githubRepoProxy, pullRequestInformationFactory) {
+        .controller('WaitingPullsController', ['$scope', '$rootScope', '$http', '$interval', '$q', 'WaitingPullsModel', function ($scope, $rootScope, $http, $interval, $q, waitingPullsModel) {
             $scope.model = waitingPullsModel;
             $scope.timerClass = '';
             var intervalPromise;
@@ -222,110 +256,158 @@
             startPolling();
         }]);
 })();
+
+(function () {
+    'use strict';
+    angular.module('Tombola.Academy.Dash.Stats')
+        .factory('UserStatsFactory', [function(){
+            return function(username, data){
+
+                var userStats  = {
+                    username: username,
+                    dayData: []
+                };
+
+                var convertDateStringKey = function(apiDate){
+                    var date = new Date(apiDate);
+                    return date.toLocaleDateString();
+                };
+
+                var dateMatch = function (element) {
+                    return element.date ===createdDate;
+                };
+
+                var createDayData = function (date){
+                    return {
+                        date: date,
+                        commits: 0,
+                        pushes: 0,
+                        pullRequests:0
+                    };
+                };
+
+                for (var i=0; i < data.length; i++){
+                    var datum = data[i];
+                    if(datum.type ==='CreateEvent' || datum.actor.login !== username){
+                        continue;
+                    }
+                    var createdDate = convertDateStringKey(datum.created_at);
+                    var dayIndex  =userStats.dayData.findIndex(dateMatch);
+                    if(dayIndex < 0){
+                        userStats.dayData.push(createDayData(createdDate));
+                        dayIndex = userStats.dayData.length -1;
+                    }
+
+                    if(datum.type === 'PullRequestEvent'){
+                        userStats.dayData[dayIndex].pullRequests++;
+                    }
+                    else if(datum.type === 'PushEvent'){
+                        userStats.dayData[dayIndex].pushes++;
+                        userStats.dayData[dayIndex].commits += datum.payload.commits.length;
+                    }
+                }
+
+                return userStats;
+            };
+        }]);
+})();
 (function () {
     'use strict';
 
     angular.module('Tombola.Academy.Dash.Stats')
-        .controller('StatsController', ['$scope', '$http', '$q', 'GitHubUserProxy', 'UserInformation', function($scope, $http, $q, gitHubUserProxy, userInformation) {
-            $scope.users = userInformation.users;
-            $scope.statistics = {};
-            $scope.statisticsOrder = [];
+        .factory('StatsNormaliser',[function () {
+            return function(rawStatistics){
+                var me = this,
+                    i,
+                    rawStatisticsLength = rawStatistics.length,
+                    statsStarted = false,
+                    normalisedStatistics = {},
+                    now = moment().startOf('day'),
+                    workingDate = now.subtract(1, 'years');
 
-            var convertDateStringKey = function(apiDate){
-                var date = new Date(apiDate);
-                return date.toLocaleDateString();
-            };
+                console.log(rawStatistics);
 
-            var processPullRequest = function (username, pullRequest){
-                if(pullRequest.payload.action !== 'opened'){
-                    return;
+                while (workingDate <= now){
+                    //for( i = 0; i <  rawStatisticsLength; i++) {
+                //      var username =  userInformation.users[i];
+                //      usersStats[username] = {pullRequests:0, pushRequests:{pushes:0, commits:0}};
+                    //}
+                //
+                //        usersStats.date = currentDate.toDate();
+                //        var key = currentDate.format('DD/MM/YYYY');
+                //        me.statisticsOrder.push(key);
+                //        me.statistics[key] = usersStats;
+                    workingDate.add(1,'day');
                 }
-                var dateKey = convertDateStringKey(pullRequest.created_at);
-                $scope.statistics[dateKey][username].pullRequests++;
+                return normalisedStatistics;
             };
+        }]);
+})();
+(function () {
+    'use strict';
 
-            var processPush = function(username, pullRequest){
-                var dateKey = convertDateStringKey(pullRequest.created_at);
-                $scope.statistics[dateKey][username].pushRequests.pushes++;
-                $scope.statistics[dateKey][username].pushRequests.commits += pullRequest.payload.commits.length;
-            };
+    angular.module('Tombola.Academy.Dash.Stats')
+        .factory('StatsModel',['$q', 'GitHubUserProxy', 'UserInformation', 'StatsNormaliser', function ($q, gitHubUserProxy, userInformation, statsNormaliser) {
+            var StatsModel = function(){
 
-            var getDataForUser = function (username){
-                var deferred = $q.defer();
-                gitHubUserProxy(username).success(function(events){
-                        for (var i = 0; i < events.length; i++) {
-                            var currentEvent =events[i];
-                            if (currentEvent.type == 'PullRequestEvent'){
-                                processPullRequest(username, currentEvent);
-                            }
-                            else if(currentEvent.type == 'PushEvent') {
-                                processPush(username, currentEvent);
-                            }
-                        }
-                        deferred.resolve();
+                var me = this;
+                me.statistics = [];
+                me.statisticsOrder = userInformation.users;
+
+                var getDataForUser = function (username){
+                    var deferred = $q.defer();
+                    gitHubUserProxy(username)
+                        .then(function(userStats){
+                            me.statistics.push(userStats);
+                            deferred.resolve();
+                        })
+                        .catch(function(error){
+                            deferred.reject(error);
+                        });
+                    return deferred.promise;
+                };
+
+                //var normalise = function(){
+                //    //Creates a full year's worth of dates, ready for you to insert your data.
+                //    var now = moment().startOf('day');
+                //    var currentDate = moment().startOf('day').subtract(1, 'years');
+                //    while (currentDate <= now){
+                //
+                //        var usersStats = {};
+                //        for(var i = 0; i<  userInformation.users.length; i++){
+                //            var username =  userInformation.users[i];
+                //            usersStats[username] = {pullRequests:0, pushRequests:{pushes:0, commits:0}};
+                //        }
+                //
+                //        usersStats.date = currentDate.toDate();
+                //        var key = currentDate.format('DD/MM/YYYY');
+                //        me.statisticsOrder.push(key);
+                //        me.statistics[key] = usersStats;
+                //        currentDate.add(1,'day');
+                //    }
+                //};
+
+                me.refresh = function() {
+                    var promises = [];
+                    for (var i = 0; i < userInformation.users.length; i++) {
+                        promises.push(getDataForUser(userInformation.users[i]));
+                    }
+
+                    $q.all(promises).then(function(data){
+                        statsNormaliser(me.statistics);
                     });
-                return deferred.promise;
+                };
             };
+            return new StatsModel();
+    }]);
+})();
+(function () {
+    'use strict';
 
-            var initialise = function(){
-                //Creates a full year's worth of dates, ready for you to insert your data.
-                var now = moment().startOf('day');
-                var currentDate = moment().startOf('day').subtract(1, 'years');
-                while (currentDate <= now){
-
-                    var usersStats = {};
-                    for(var i = 0; i<  $scope.users.length; i++){
-                        var username =  $scope.users[i];
-                        usersStats[username] = {pullRequests:0, pushRequests:{pushes:0, commits:0}};
-                    }
-
-                    usersStats.date = currentDate.toDate();
-                    var key = currentDate.format('DD/MM/YYYY');
-                    $scope.statisticsOrder.push(key);
-                    $scope.statistics[key] = usersStats;
-                    currentDate.add(1,'day');
-                }
-            };
-
-            var clean = function(){
-                var daysToRemove = 0;
-                for(var i=0; i< $scope.statisticsOrder .length; i++)
-                {
-                    var currentDay = $scope.statisticsOrder[i];
-                    var row = $scope.statistics[currentDay];
-                    var sum = 0;
-
-                    for(var j =0; j < $scope.users.length; j++)
-                    {
-                        var userData = row[$scope.users[j]];
-                        sum += userData.pullRequests;
-                        sum += userData.pushRequests.pushes;
-                        sum += userData.pushRequests.commits;
-                    }
-                    if(sum === 0){
-                        delete $scope.statistics[currentDay];
-                        daysToRemove++;
-                    }
-                    else
-                    {
-                        break;
-                    }
-                }
-                $scope.statisticsOrder.splice(0, daysToRemove);
-            };
-
-            var refresh = function(){
-                initialise();
-                var promises = [];
-
-                for(var i = 0; i<   $scope.users.length; i++){
-                    var username = $scope.users[i];
-                    promises.push(getDataForUser(username));
-                }
-                $q.all(promises).then(clean);
-            };
-
-            refresh();
+    angular.module('Tombola.Academy.Dash.Stats')
+        .controller('StatsController', ['$scope', 'StatsModel', function($scope,  statsModel) {
+            $scope.model = statsModel;
+            $scope.model.refresh();
 
         }]);
 })();

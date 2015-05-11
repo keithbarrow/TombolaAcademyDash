@@ -53,6 +53,9 @@ gulp.task('concat-scripts', function() {
         './main-app/scripts/waiting-pulls/waiting-pulls-model.js',
         './main-app/scripts/waiting-pulls/pull-request-information-factory.js',
         './main-app/scripts/waiting-pulls/waiting-pulls-controller.js',
+        './main-app/scripts/stats/user-stats-factory.js',
+        './main-app/scripts/stats/stats-normaliser.js',
+        './main-app/scripts/stats/stats-model.js',
         './main-app/scripts/stats/stats-controller.js'
         ])
         .pipe(concat('app.js'))

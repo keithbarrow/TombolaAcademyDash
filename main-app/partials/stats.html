@@ -11,11 +11,11 @@
             <th>Push</th>
             <th ng-repeat-end>Coms/Push</th>
         </tr>
-        <tr ng-repeat="key in statisticsOrder">
+        <tr ng-repeat="key in model.statisticsOrder">
             <th>{{key}}</th>
-            <td ng-repeat-start="user in users">{{statistics[key][user].pullRequests}}</td>
+            <td ng-repeat-start="user in users">{{model.statistics[key][user].pullRequests}}</td>
             <td>{{statistics[key][user].pushRequests.pushes}}</td>
-            <td ng-repeat-end>{{statistics[key][user].pushRequests.commits}}</td>
+            <td ng-repeat-end>{{model.statistics[key][user].pushRequests.commits}}</td>
         </tr>
     </tbody>
 </table>

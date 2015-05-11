@@ -3,7 +3,7 @@
 
 
     angular.module('Tombola.Academy.Dash.WaitingPulls')
-        .controller('WaitingPullsController', ['$scope', '$rootScope', '$http', '$interval', '$q', 'WaitingPullsModel', 'GithubRepoProxy', 'PullRequestInformationFactory', function ($scope, $rootScope, $http, $interval, $q, waitingPullsModel, githubRepoProxy, pullRequestInformationFactory) {
+        .controller('WaitingPullsController', ['$scope', '$rootScope', '$http', '$interval', '$q', 'WaitingPullsModel', function ($scope, $rootScope, $http, $interval, $q, waitingPullsModel) {
             $scope.model = waitingPullsModel;
             $scope.timerClass = '';
             var intervalPromise;
