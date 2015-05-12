@@ -316,27 +316,66 @@
 
     angular.module('Tombola.Academy.Dash.Stats')
         .factory('StatsNormaliser',[function () {
-            return function(rawStatistics){
-                var me = this,
-                    i,
-                    rawStatisticsLength = rawStatistics.length,
-                    statsStarted = false,
-                    normalisedStatistics = {},
-                    now = moment().startOf('day'),
-                    workingDate = now.subtract(1, 'years');
 
-                console.log(rawStatistics);
+            var createDayData  = function (date, users){
+                var i,
+                    numberUsers = users.length,
+                    data = {date: date, userdata:[]};
+
+                for (i=0; i<numberUsers; i++){
+                    data.userdata.push({ user:users[i], commits:0, pushes:0, pullRequests:0 });
+                }
+                return data;
+            };
+
+            var getUsers = function(rawStatistics){
+                var i,
+                    numberOfUsers = rawStatistics.length,
+                    usernames= [];
+
+                for (i=0; i < numberOfUsers; i++){
+                    usernames.push(rawStatistics[i].username);
+                }
+                return usernames;
+            };
+
+            return function(rawStatistics){
+
+                var i,
+                    j,
+                    rawStatisticsLength = rawStatistics.length,
+                    normalisedStatistics = [],
+                    now = moment().startOf('day'),
+                    workingDate = moment().startOf('day').subtract(1, 'years'),
+                    workingDateString,
+                    workingData,
+                    started = false,
+                    usernames = getUsers(rawStatistics);
+
+                function populateUserData() {
+                    for (j = 0; j < userStats.dayData.length; j++) {
+                        if (userStats.dayData[j].date == workingDateString) {
+                            workingData.userdata[i].crossCheck = userStats;
+                            workingData.userdata[i].commits = userStats.dayData[j].commits;
+                            workingData.userdata[i].pullRequests = userStats.dayData[j].pullRequests;
+                            workingData.userdata[i].pushes = userStats.dayData[j].pushes;
+                            started = true;
+                            break;
+                        }
+                    }
+                }
 
                 while (workingDate <= now){
-                    //for( i = 0; i <  rawStatisticsLength; i++) {
-                //      var username =  userInformation.users[i];
-                //      usersStats[username] = {pullRequests:0, pushRequests:{pushes:0, commits:0}};
-                    //}
-                //
-                //        usersStats.date = currentDate.toDate();
-                //        var key = currentDate.format('DD/MM/YYYY');
-                //        me.statisticsOrder.push(key);
-                //        me.statistics[key] = usersStats;
+                    workingDateString = workingDate.format('DD/MM/YYYY');
+                    workingData = createDayData(workingDateString, usernames);
+
+                    for( i = 0; i <  rawStatisticsLength; i++) {
+                        var userStats =  rawStatistics[i];
+                        populateUserData();
+                    }
+                    if(started){
+                        normalisedStatistics.push(workingData);
+                    }
                     workingDate.add(1,'day');
                 }
                 return normalisedStatistics;
@@ -351,14 +390,14 @@
             var StatsModel = function(){
 
                 var me = this;
+                var rawStatistics = [];
                 me.statistics = [];
-                me.statisticsOrder = userInformation.users;
 
                 var getDataForUser = function (username){
                     var deferred = $q.defer();
                     gitHubUserProxy(username)
                         .then(function(userStats){
-                            me.statistics.push(userStats);
+                            rawStatistics .push(userStats);
                             deferred.resolve();
                         })
                         .catch(function(error){
@@ -367,26 +406,6 @@
                     return deferred.promise;
                 };
 
-                //var normalise = function(){
-                //    //Creates a full year's worth of dates, ready for you to insert your data.
-                //    var now = moment().startOf('day');
-                //    var currentDate = moment().startOf('day').subtract(1, 'years');
-                //    while (currentDate <= now){
-                //
-                //        var usersStats = {};
-                //        for(var i = 0; i<  userInformation.users.length; i++){
-                //            var username =  userInformation.users[i];
-                //            usersStats[username] = {pullRequests:0, pushRequests:{pushes:0, commits:0}};
-                //        }
-                //
-                //        usersStats.date = currentDate.toDate();
-                //        var key = currentDate.format('DD/MM/YYYY');
-                //        me.statisticsOrder.push(key);
-                //        me.statistics[key] = usersStats;
-                //        currentDate.add(1,'day');
-                //    }
-                //};
-
                 me.refresh = function() {
                     var promises = [];
                     for (var i = 0; i < userInformation.users.length; i++) {
@@ -394,7 +413,7 @@
                     }
 
                     $q.all(promises).then(function(data){
-                        statsNormaliser(me.statistics);
+                        me.statistics = statsNormaliser(rawStatistics);
                     });
                 };
             };

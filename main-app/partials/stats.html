@@ -3,19 +3,19 @@
     <tbody>
         <tr>
             <th> </th>
-            <th colspan="3" ng-repeat="user in users">{{user}}</th>
+            <th colspan="3" ng-repeat="userdata in model.statistics[0].userdata">{{userdata.user}}</th>
         </tr>
         <tr>
             <th> </th>
-            <th ng-repeat-start="user in users">PRs</th>
+            <th ng-repeat-start="user in model.statistics[0].userdata">PRs</th>
             <th>Push</th>
             <th ng-repeat-end>Coms/Push</th>
         </tr>
-        <tr ng-repeat="key in model.statisticsOrder">
-            <th>{{key}}</th>
-            <td ng-repeat-start="user in users">{{model.statistics[key][user].pullRequests}}</td>
-            <td>{{statistics[key][user].pushRequests.pushes}}</td>
-            <td ng-repeat-end>{{model.statistics[key][user].pushRequests.commits}}</td>
+        <tr ng-repeat="day in model.statistics">
+            <th>{{day.date}}</th>
+            <td ng-repeat-start="userdata in day.userdata">{{userdata.pullRequests}}</td>
+            <td>{{userdata.pushes}}</td>
+            <td ng-repeat-end>{{userdata.commits}}</td>
         </tr>
     </tbody>
 </table>
