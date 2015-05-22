@@ -1,7 +1,7 @@
 (function () {
     'use strict';
     angular.module('Tombola.Academy.Dash.TaProxy')
-        .factory('UserInformation', function(){
+        .service('UserInformation', function(){
             var UserInfo = function() {
                 var me = this;
                 me.users = ['Davros2106', /*'DeclanT',*/ 'Koolaidman64', 'LewisGardner25', 'SalamanderMan'];

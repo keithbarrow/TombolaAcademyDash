@@ -27,7 +27,6 @@
             };
 
             return function(rawStatistics){
-
                 var i,
                     j,
                     rawStatisticsLength = rawStatistics.length,

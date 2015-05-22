@@ -6,24 +6,24 @@
             var StatsModel = function(){
 
                 var me = this;
-                var rawStatistics = [];
                 me.statistics = [];
-
-                var getDataForUser = function (username){
-                    var deferred = $q.defer();
-                    gitHubUserProxy(username)
-                        .then(function(userStats){
-                            rawStatistics .push(userStats);
-                            deferred.resolve();
-                        })
-                        .catch(function(error){
-                            deferred.reject(error);
-                        });
-                    return deferred.promise;
-                };
 
                 me.refresh = function() {
                     var promises = [];
+                    var rawStatistics = [];
+                    var getDataForUser = function (username){
+                        var deferred = $q.defer();
+                        gitHubUserProxy(username)
+                            .then(function(userStats){
+                                rawStatistics .push(userStats);
+                                deferred.resolve();
+                            })
+                            .catch(function(error){
+                                deferred.reject(error);
+                            });
+                        return deferred.promise;
+                    };
+
                     for (var i = 0; i < userInformation.users.length; i++) {
                         promises.push(getDataForUser(userInformation.users[i]));
                     }

@@ -32,24 +32,24 @@
     angular.module('Tombola.Academy.Dash.Stats', ['Tombola.Academy.Dash.TaProxy']);
 
     angular.module('myApp', [
-        'ngRoute',
+        'ui.router',
         'Tombola.Academy.Dash.WaitingPulls',
         'Tombola.Academy.Dash.Stats'
-    ]).config( function($routeProvider, $locationProvider) {
-            $locationProvider.html5Mode(true);
-            $locationProvider.hashPrefix('!');
-            $routeProvider
-                .when('/', {
-                    templateUrl: 'partials/waitingpulls.html',
-                    controller:  'WaitingPullsController'
-                })
-                .when('/stats', {
-                    templateUrl: 'partials/stats.html',
-                    controller:  'StatsController'
-                })
-                .otherwise({redirectTo: '/'});
-
-        });
+    ]);
+})();
+(function () {
+    'use strict';
+    angular.module('myApp').config( function($stateProvider) {
+        $stateProvider
+            .state('waitingPulls', {
+                templateUrl: 'partials/waitingPulls.html',
+                controller:  'WaitingPullsController'
+            })
+            .state('stats', {
+                templateUrl: 'partials/stats.html',
+                controller:  'StatsController'
+            });
+    });
 })();
 (function () {
     'use strict';
@@ -97,7 +97,7 @@
 (function () {
     'use strict';
     angular.module('Tombola.Academy.Dash.TaProxy')
-        .factory('UserInformation', function(){
+        .service('UserInformation', function(){
             var UserInfo = function() {
                 var me = this;
                 me.users = ['Davros2106', /*'DeclanT',*/ 'Koolaidman64', 'LewisGardner25', 'SalamanderMan'];
@@ -340,7 +340,6 @@
             };
 
             return function(rawStatistics){
-
                 var i,
                     j,
                     rawStatisticsLength = rawStatistics.length,
@@ -390,24 +389,24 @@
             var StatsModel = function(){
 
                 var me = this;
-                var rawStatistics = [];
                 me.statistics = [];
-
-                var getDataForUser = function (username){
-                    var deferred = $q.defer();
-                    gitHubUserProxy(username)
-                        .then(function(userStats){
-                            rawStatistics .push(userStats);
-                            deferred.resolve();
-                        })
-                        .catch(function(error){
-                            deferred.reject(error);
-                        });
-                    return deferred.promise;
-                };
 
                 me.refresh = function() {
                     var promises = [];
+                    var rawStatistics = [];
+                    var getDataForUser = function (username){
+                        var deferred = $q.defer();
+                        gitHubUserProxy(username)
+                            .then(function(userStats){
+                                rawStatistics .push(userStats);
+                                deferred.resolve();
+                            })
+                            .catch(function(error){
+                                deferred.reject(error);
+                            });
+                        return deferred.promise;
+                    };
+
                     for (var i = 0; i < userInformation.users.length; i++) {
                         promises.push(getDataForUser(userInformation.users[i]));
                     }
@@ -429,4 +428,10 @@
             $scope.model.refresh();
 
         }]);
+})();
+(function () {
+    'use strict';
+    angular.module('myApp').controller('MainController', ['$state',function($state){
+        $state.go('waitingPulls');
+    }]);
 })();
