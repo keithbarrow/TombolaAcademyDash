@@ -42,7 +42,7 @@
     angular.module('myApp').config( function($stateProvider) {
         $stateProvider
             .state('waitingPulls', {
-                templateUrl: 'partials/waitingPulls.html',
+                templateUrl: 'partials/waitingpulls.html',
                 controller:  'WaitingPullsController'
             })
             .state('stats', {
