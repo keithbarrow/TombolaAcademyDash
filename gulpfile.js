@@ -38,7 +38,7 @@ gulp.task('copy-images', function(){
 });
 
 gulp.task('copy-main-html', function(){
-    return gulp.src('./main-app/index.html')
+    return gulp.src('./main-app/*.html')
         .pipe(copy('./.build/', { prefix:1 }));
 });
 
