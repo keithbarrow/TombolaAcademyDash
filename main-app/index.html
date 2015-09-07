@@ -24,11 +24,13 @@
         <span class="navbar-brand">TA</span>
       </div>
       <div class="collapse navbar-collapse">
-        <ul class="nav navbar-nav">
+        <ul class="nav navbar-nav" ng-show="isAuthenticated()">
           <li><a ui-sref="waitingPulls">Waiting Pull Requests</a></li>
           <li><a ui-sref="stats">Stats</a></li>
+          <li><a href="#" ng-click="logout()">Logout</a></li>
         </ul>
       </div>
+
     </div>
   </nav>
 </div>

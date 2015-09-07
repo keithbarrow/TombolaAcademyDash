@@ -1,8 +1,10 @@
 @duration: 60s;
 @nyanDuration: 300s;
+@mainBackgroundColor: #003466;
+@defaultTextColor: #AAAAAA;
 
 body{
-    background-color: #003466;
+    background-color: @mainBackgroundColor;
     background-image: url("images/background.png");
     background-repeat: repeat;
     -webkit-animation-name: moveBackground; /* Chrome, Safari, Opera */
@@ -107,4 +109,19 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
 
 table{
     color:#ddd;
+}
+
+form.login {
+  background-color: @mainBackgroundColor;
+  width: 250px;
+  label {
+    color: @defaultTextColor ;
+    width: 75px;
+  }
+  input {
+    width: 155px;
+  }
+  input[type=button] {
+    margin-left: 75px;
+  }
 }

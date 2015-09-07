@@ -27,13 +27,14 @@
     }
 
     angular.module('Tombola.Academy.Dash.TaProxy', []);
+    angular.module('Tombola.Academy.Dash.Authentication', ['Tombola.Academy.Dash.TaProxy']);
     angular.module('Tombola.Academy.Dash.GithubProxy', ['Tombola.Academy.Dash.GithubProxy']);
     angular.module('Tombola.Academy.Dash.WaitingPulls', ['Tombola.Academy.Dash.GithubProxy']);
     angular.module('Tombola.Academy.Dash.Stats', ['Tombola.Academy.Dash.TaProxy']);
 
     angular.module('myApp', [
         'ui.router',
+        'Tombola.Academy.Dash.Authentication',
         'Tombola.Academy.Dash.WaitingPulls',
-        'Tombola.Academy.Dash.Stats'
-    ]);
+        'Tombola.Academy.Dash.Stats']);
 })();

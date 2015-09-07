@@ -51,6 +51,7 @@ gulp.task('concat-scripts', function() {
     return gulp.src(['./main-app/scripts/modules.js',
         './main-app/scripts/module-config.js',
         './main-app/scripts/providers/**/*.js',
+        './main-app/scripts/authentication/authentication-controller.js',
         './main-app/scripts/waiting-pulls/waiting-pulls-model.js',
         './main-app/scripts/waiting-pulls/pull-request-information-factory.js',
         './main-app/scripts/waiting-pulls/waiting-pulls-controller.js',
@@ -58,7 +59,8 @@ gulp.task('concat-scripts', function() {
         './main-app/scripts/stats/stats-normaliser.js',
         './main-app/scripts/stats/stats-model.js',
         './main-app/scripts/stats/stats-controller.js',
-        './main-app/scripts/main-controller.js'
+        './main-app/scripts/main-controller.js',
+        './main-app/scripts/module-run.js'
         ])
         .pipe(concat('app.js'))
         .pipe(gulp.dest('./.build/scripts'));

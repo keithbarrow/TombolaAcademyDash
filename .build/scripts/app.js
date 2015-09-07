@@ -27,29 +27,62 @@
     }
 
     angular.module('Tombola.Academy.Dash.TaProxy', []);
+    angular.module('Tombola.Academy.Dash.Authentication', ['Tombola.Academy.Dash.TaProxy']);
     angular.module('Tombola.Academy.Dash.GithubProxy', ['Tombola.Academy.Dash.GithubProxy']);
     angular.module('Tombola.Academy.Dash.WaitingPulls', ['Tombola.Academy.Dash.GithubProxy']);
     angular.module('Tombola.Academy.Dash.Stats', ['Tombola.Academy.Dash.TaProxy']);
 
     angular.module('myApp', [
         'ui.router',
+        'Tombola.Academy.Dash.Authentication',
         'Tombola.Academy.Dash.WaitingPulls',
-        'Tombola.Academy.Dash.Stats'
-    ]);
+        'Tombola.Academy.Dash.Stats']);
 })();
 (function () {
     'use strict';
-    angular.module('myApp').config( function($stateProvider) {
-        $stateProvider
-            .state('waitingPulls', {
-                templateUrl: 'partials/waitingpulls.html',
-                controller:  'WaitingPullsController'
-            })
-            .state('stats', {
-                templateUrl: 'partials/stats.html',
-                controller:  'StatsController'
-            });
-    });
+    angular.module('myApp')
+        .config(['$stateProvider', function($stateProvider) {
+            $stateProvider
+                .state('waitingPulls', {
+                    templateUrl: 'partials/waitingpulls.html',
+                    controller:  'WaitingPullsController'
+                })
+                .state('stats', {
+                    templateUrl: 'partials/stats.html',
+                    controller:  'StatsController'
+                })
+                .state('login', {
+                    templateUrl: 'partials/login.html',
+                    controller:  'AuthenticationController'
+                });
+        }]);
+})();
+(function () {
+    'use strict';
+    angular.module('Tombola.Academy.Dash.Authentication')
+        .service('Authenticator', [ '$state', 'UserInformation', function ($state, userInformation){
+        var token = null;
+
+        return {
+            login: function(username, password){
+                token = userInformation.login(username, password);
+                if(this.isAuthenticated()){
+                    $state.go('waitingPulls'); //No sense of where user was going...
+                }
+            },
+            logout: function() {
+                token = null;
+                $state.go('login');
+            },
+            isAuthenticated : function(){
+                return token !== null;
+            },
+            getToken: function (){
+                return token;
+            }
+        };
+    }]);
+
 })();
 (function () {
     'use strict';
@@ -112,9 +145,25 @@
                     {username: 'JakeArkleyTombola', repositories: ['NoughtsAndCrosses']},
                     {username: 'matthew-english', repositories: ['Noughts-and-Crosses']}
                 ];
+
+                me.login = function (username, password){
+                    return 'STUB TOKEN  FOR' + username;
+                };
             };
             return new UserInfo();
     });
+})();
+(function () {
+    'use strict';
+
+    angular.module('Tombola.Academy.Dash.Authentication')
+        .controller('AuthenticationController', ['$scope', '$state', 'Authenticator', function($scope, $state, authenticator) {
+            $scope.username ='';
+            $scope.password ='';
+            $scope.login = function(){
+                authenticator.login($scope.username, $scope.password);
+            };
+        }]);
 })();
 (function () {
     'use strict';
@@ -431,7 +480,27 @@
 })();
 (function () {
     'use strict';
-    angular.module('myApp').controller('MainController', ['$state',function($state){
-        $state.go('waitingPulls');
+    angular.module('myApp')
+        .controller('MainController', ['$scope', '$state','Authenticator', function($scope, $state, authenticator){
+            $scope.isAuthenticated = function(){
+                return authenticator.isAuthenticated();
+            };
+            $scope.logout = function (){
+                authenticator.logout();
+            };
+            $state.go('waitingPulls');
     }]);
+})();
+(function () {
+    'use strict';
+    angular.module('myApp')
+        .run(['$rootScope', '$state','Authenticator', function($rootScope, $state, authenticator){
+            $rootScope.$on('$stateChangeStart', function(event, toState){
+                //Note - no sense of roles, will lose where we were headed at login...
+                if(!authenticator.isAuthenticated() && toState.name !== 'login'){
+                    event.preventDefault();
+                    $state.go('login');
+                }
+            });
+        }]);
 })();

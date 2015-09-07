@@ -16,6 +16,10 @@
                     {username: 'JakeArkleyTombola', repositories: ['NoughtsAndCrosses']},
                     {username: 'matthew-english', repositories: ['Noughts-and-Crosses']}
                 ];
+
+                me.login = function (username, password){
+                    return 'STUB TOKEN  FOR' + username;
+                };
             };
             return new UserInfo();
     });
