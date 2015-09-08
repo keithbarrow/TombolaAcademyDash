@@ -50,7 +50,11 @@ gulp.task('copy-partial-html', function(){
 gulp.task('concat-scripts', function() {
     return gulp.src(['./main-app/scripts/modules.js',
         './main-app/scripts/module-config.js',
-        './main-app/scripts/providers/**/*.js',
+        './main-app/scripts/providers/authentication/**/*.js',
+        './main-app/scripts/providers/github-proxy/**/*.js',
+        './main-app/scripts/providers/ta-proxy/*.js',
+        './main-app/scripts/providers/waiting-pulls/*.js',
+        './main-app/scripts/providers/stats/*.js',
         './main-app/scripts/authentication/authentication-controller.js',
         './main-app/scripts/waiting-pulls/waiting-pulls-model.js',
         './main-app/scripts/waiting-pulls/pull-request-information-factory.js',

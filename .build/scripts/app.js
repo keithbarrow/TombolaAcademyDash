@@ -26,14 +26,16 @@
         };
     }
 
-    angular.module('Tombola.Academy.Dash.TaProxy', []);
-    angular.module('Tombola.Academy.Dash.Authentication', ['Tombola.Academy.Dash.TaProxy']);
-    angular.module('Tombola.Academy.Dash.GithubProxy', ['Tombola.Academy.Dash.GithubProxy']);
-    angular.module('Tombola.Academy.Dash.WaitingPulls', ['Tombola.Academy.Dash.GithubProxy']);
-    angular.module('Tombola.Academy.Dash.Stats', ['Tombola.Academy.Dash.TaProxy']);
+
+    angular.module('Tombola.Academy.Dash.Authentication', []);
+    angular.module('Tombola.Academy.Dash.GithubProxy', []);
+    angular.module('Tombola.Academy.Dash.TaProxy', ['Tombola.Academy.Dash.Authentication']);
+    angular.module('Tombola.Academy.Dash.WaitingPulls', ['Tombola.Academy.Dash.GithubProxy', 'Tombola.Academy.Dash.TaProxy']);
+    angular.module('Tombola.Academy.Dash.Stats', ['Tombola.Academy.Dash.GithubProxy', 'Tombola.Academy.Dash.TaProxy']);
 
     angular.module('myApp', [
         'ui.router',
+        'Tombola.Academy.Dash.TaProxy',
         'Tombola.Academy.Dash.Authentication',
         'Tombola.Academy.Dash.WaitingPulls',
         'Tombola.Academy.Dash.Stats']);
@@ -60,28 +62,64 @@
 (function () {
     'use strict';
     angular.module('Tombola.Academy.Dash.Authentication')
-        .service('Authenticator', [ '$state', 'UserInformation', function ($state, userInformation){
-        var token = null;
-
+        .service('Authenticator', ['$http', 'TokenService', function ($http, tokenService){
         return {
             login: function(username, password){
-                token = userInformation.login(username, password);
-                if(this.isAuthenticated()){
-                    $state.go('waitingPulls'); //No sense of where user was going...
-                }
+                    var request = {
+                        method: 'POST',
+                        url: 'https://localhost:3000/authenticate',
+                        withCredentials: false,
+                        data: {"username":username, "password":password}
+                    };
+                    $http(request).success(function(data){
+                        if(data.success){
+                            tokenService.setToken(data.token);
+                        }
+                        else{
+                            tokenService.resetToken();
+                        }
+                    })
+                    .error(function(data, status) {
+                        console.log(data);
+                        console.log(status);
+                        tokenService.resetToken();
+                    });
+
             },
             logout: function() {
-                token = null;
-                $state.go('login');
-            },
-            isAuthenticated : function(){
-                return token !== null;
-            },
-            getToken: function (){
-                return token;
+                tokenService.resetToken();
             }
         };
     }]);
+
+})();
+(function () {
+    'use strict';
+    angular.module('Tombola.Academy.Dash.Authentication')
+        .service('TokenService', ['$state', function ($state){
+            var token = null;
+
+            return {
+                isAuthenticated : function(){
+                    return token !== null;
+                },
+                getToken: function (){
+                    return token;
+                },
+                setToken: function(newToken){
+                    token = newToken;
+                    if(this.isAuthenticated()){
+                        $state.go('waitingPulls'); //No sense of where user was going...
+                    }
+                    else{
+                        $state.go('login');
+                    }
+                },
+                resetToken: function(){
+                    this.setToken(null);
+                }
+            };
+        }]);
 
 })();
 (function () {
@@ -129,99 +167,8 @@
 })();
 (function () {
     'use strict';
-    angular.module('Tombola.Academy.Dash.TaProxy')
-        .service('UserInformation', function(){
-            var UserInfo = function() {
-                var me = this;
-                me.users = ['Davros2106', /*'DeclanT',*/ 'Koolaidman64', 'LewisGardner25', 'SalamanderMan'];
 
-                me.repositoriesToCheck = [
-                    {username: 'Davros2106', repositories: ['NoughtsAndCrossesClient']},
-                    {username: 'Koolaidman64', repositories: ['NoughtsAndCrosses']},
-                    {username: 'LewisGardner25', repositories: ['NoughtsAndCrosses']},
-                    {username: 'SalamanderMan', repositories: ['NoughtsAndCrosses']},
-
-                    {username: 'Matthew-Gilmore', repositories: ['HendonHerald', 'NoughtsAndCrosses']},
-                    {username: 'JakeArkleyTombola', repositories: ['NoughtsAndCrosses']},
-                    {username: 'matthew-english', repositories: ['Noughts-and-Crosses']}
-                ];
-
-                me.login = function (username, password){
-                    return 'STUB TOKEN  FOR' + username;
-                };
-            };
-            return new UserInfo();
-    });
-})();
-(function () {
-    'use strict';
-
-    angular.module('Tombola.Academy.Dash.Authentication')
-        .controller('AuthenticationController', ['$scope', '$state', 'Authenticator', function($scope, $state, authenticator) {
-            $scope.username ='';
-            $scope.password ='';
-            $scope.login = function(){
-                authenticator.login($scope.username, $scope.password);
-            };
-        }]);
-})();
-(function () {
-    'use strict';
-
-    angular.module('Tombola.Academy.Dash.WaitingPulls')
-        .factory('WaitingPullsModel',['$q', 'UserInformation', 'GithubRepoProxy', function ($q, userInformation, githubRepoProxy) {
-            var WaitingPullsModel = function (data) {
-                var me = this;
-                var repositoriesToCheck = userInformation.repositoriesToCheck;
-                me.waitingPulls = [];
-
-                var requestPulls = function(){
-                    var promises = [];
-
-                    for (var i = 0; i < repositoriesToCheck.length; i++) {
-                        var username = repositoriesToCheck[i].username;
-                        for (var j = 0; j < repositoriesToCheck[i].repositories.length; j++) {
-                            var repositoryName = repositoriesToCheck[i].repositories[j];
-                            promises.push(githubRepoProxy(username, repositoryName));
-                        }
-                    }
-
-                    return promises;
-                };
-
-                var update = function (waitingPullsResult) {
-                    me.waitingPulls = [];
-                    for(var i = 0; i < waitingPullsResult.length; i++){
-                        if(waitingPullsResult[i].pullRequests){
-                            me.waitingPulls.push(waitingPullsResult[i]);
-                        }
-                    }
-                };
-
-                me.refresh = function(){
-                    var deferred = $q.defer();
-                    $q.all(requestPulls()).
-                        then(function(waitingPullsResult){
-                            update(waitingPullsResult);
-                            deferred.resolve();
-                        })
-                        .catch(function(message){
-                            deferred.reject(message);
-                        });
-                    return deferred.promise;
-                };
-
-            };
-            return new WaitingPullsModel();
-
-        }]);
-})();
-
-
-(function () {
-    'use strict';
-
-    angular.module('Tombola.Academy.Dash.WaitingPulls')
+    angular.module('Tombola.Academy.Dash.GithubProxy')
         .factory('PullRequestInformationFactory', function () {
             var pullRequestInformation = function (data) {
                 var pullRequestInformation = {};
@@ -264,51 +211,10 @@
         });
 })();
 
-(function () {
-    'use strict';
-
-
-    angular.module('Tombola.Academy.Dash.WaitingPulls')
-        .controller('WaitingPullsController', ['$scope', '$rootScope', '$http', '$interval', '$q', 'WaitingPullsModel', function ($scope, $rootScope, $http, $interval, $q, waitingPullsModel) {
-            $scope.model = waitingPullsModel;
-            $scope.timerClass = '';
-            var intervalPromise;
-
-
-            var refresh = function () {
-                $scope.timerClass = '';
-                waitingPullsModel.refresh()
-                    .catch(function(message){
-                        alert(message);
-                    });
-                $scope.timerClass = 'nyantimer';
-
-            };
-
-            var startPolling = function () {
-                intervalPromise = $interval(function () {
-                        refresh();
-                    }, 5 * 60 * 1000
-                );
-            };
-
-            $rootScope.$on('$routeChangeSuccess', function (event, toRoute) {
-                if (toRoute.$$route.controller === 'WaitingPullsController') {
-                    refresh();
-                }
-                else {
-                    $interval.cancel(intervalPromise);
-                }
-            });
-
-            refresh();
-            startPolling();
-        }]);
-})();
 
 (function () {
     'use strict';
-    angular.module('Tombola.Academy.Dash.Stats')
+    angular.module('Tombola.Academy.Dash.GithubProxy')
         .factory('UserStatsFactory', [function(){
             return function(username, data){
 
@@ -358,6 +264,139 @@
 
                 return userStats;
             };
+        }]);
+})();
+(function () {
+    'use strict';
+    angular.module('Tombola.Academy.Dash.TaProxy')
+        .service('UserInformation', ['$http', 'TokenService', function($http, tokenService){
+            return {
+                //TODO: ferry off URLS somewhere
+                //TODO: get repos call
+                getRepositoriesToCheck: function(){
+                    return [
+                        {username: 'Davros2106', repositories: ['NoughtsAndCrossesClient']},
+                        {username: 'Koolaidman64', repositories: ['NoughtsAndCrosses']},
+                        {username: 'SalamanderMan', repositories: ['NoughtsAndCrosses']},
+                    ];
+                },
+                getUsers: function (){
+                    var request = {
+                        method: 'GET',
+                        url: 'https://localhost:3000/api/githubusers',
+                        headers:{
+                            'x-access-token': tokenService.getToken()
+                        }
+                    };
+                    return $http(request);
+                }
+            };
+    }]);
+})();
+(function () {
+    'use strict';
+
+    angular.module('Tombola.Academy.Dash.Authentication')
+        .controller('AuthenticationController', ['$scope', '$state', 'Authenticator', function($scope, $state, authenticator) {
+            $scope.username ='';
+            $scope.password ='';
+            $scope.login = function(){
+                authenticator.login($scope.username, $scope.password);
+            };
+        }]);
+})();
+(function () {
+    'use strict';
+
+    angular.module('Tombola.Academy.Dash.WaitingPulls')
+        .factory('WaitingPullsModel',['$q', 'UserInformation', 'GithubRepoProxy', function ($q, userInformation, githubRepoProxy) {
+            var WaitingPullsModel = function (data) {
+                var me = this;
+                var repositoriesToCheck = userInformation.getRepositoriesToCheck();
+                me.waitingPulls = [];
+
+                var requestPulls = function(){
+                    var promises = [];
+
+                    for (var i = 0; i < repositoriesToCheck.length; i++) {
+                        var username = repositoriesToCheck[i].username;
+                        for (var j = 0; j < repositoriesToCheck[i].repositories.length; j++) {
+                            var repositoryName = repositoriesToCheck[i].repositories[j];
+                            promises.push(githubRepoProxy(username, repositoryName));
+                        }
+                    }
+
+                    return promises;
+                };
+
+                var update = function (waitingPullsResult) {
+                    me.waitingPulls = [];
+                    for(var i = 0; i < waitingPullsResult.length; i++){
+                        if(waitingPullsResult[i].pullRequests){
+                            me.waitingPulls.push(waitingPullsResult[i]);
+                        }
+                    }
+                };
+
+                me.refresh = function(){
+                    var deferred = $q.defer();
+                    $q.all(requestPulls()).
+                        then(function(waitingPullsResult){
+                            update(waitingPullsResult);
+                            deferred.resolve();
+                        })
+                        .catch(function(message){
+                            deferred.reject(message);
+                        });
+                    return deferred.promise;
+                };
+
+            };
+            return new WaitingPullsModel();
+
+        }]);
+})();
+
+
+(function () {
+    'use strict';
+
+
+    angular.module('Tombola.Academy.Dash.WaitingPulls')
+        .controller('WaitingPullsController', ['$scope', '$rootScope', '$http', '$interval', '$q', 'WaitingPullsModel', function ($scope, $rootScope, $http, $interval, $q, waitingPullsModel) {
+            $scope.model = waitingPullsModel;
+            $scope.timerClass = '';
+            var intervalPromise;
+
+
+            var refresh = function () {
+                $scope.timerClass = '';
+                waitingPullsModel.refresh()
+                    .catch(function(message){
+                        alert(message);
+                    });
+                $scope.timerClass = 'nyantimer';
+
+            };
+
+            var startPolling = function () {
+                intervalPromise = $interval(function () {
+                        refresh();
+                    }, 5 * 60 * 1000
+                );
+            };
+
+            $rootScope.$on('$routeChangeSuccess', function (event, toRoute) {
+                if (toRoute.$$route.controller === 'WaitingPullsController') {
+                    refresh();
+                }
+                else {
+                    $interval.cancel(intervalPromise);
+                }
+            });
+
+            refresh();
+            startPolling();
         }]);
 })();
 (function () {
@@ -435,37 +474,43 @@
 
     angular.module('Tombola.Academy.Dash.Stats')
         .factory('StatsModel',['$q', 'GitHubUserProxy', 'UserInformation', 'StatsNormaliser', function ($q, gitHubUserProxy, userInformation, statsNormaliser) {
-            var StatsModel = function(){
-
-                var me = this;
-                me.statistics = [];
-
-                me.refresh = function() {
-                    var promises = [];
-                    var rawStatistics = [];
-                    var getDataForUser = function (username){
-                        var deferred = $q.defer();
-                        gitHubUserProxy(username)
-                            .then(function(userStats){
-                                rawStatistics .push(userStats);
-                                deferred.resolve();
-                            })
-                            .catch(function(error){
-                                deferred.reject(error);
-                            });
-                        return deferred.promise;
-                    };
-
-                    for (var i = 0; i < userInformation.users.length; i++) {
-                        promises.push(getDataForUser(userInformation.users[i]));
-                    }
-
-                    $q.all(promises).then(function(data){
-                        me.statistics = statsNormaliser(rawStatistics);
+            var rawStatistics = [],
+                getDataForUser = function (username){
+                    var deferred = $q.defer();
+                    gitHubUserProxy(username).then(function(userStats){
+                        rawStatistics.push(userStats);
+                        deferred.resolve();
+                    })
+                    .catch(function(error){
+                        deferred.reject(error);
                     });
+                    return deferred.promise;
+                },
+                processUsers = function(users){
+                    var promises = [],
+                        i;
+                    for (i = 0; i < users.length; i++) {
+                        console.log(users[i].username);
+                        promises.push(getDataForUser(users[i].username));
+                    }
+                    return promises;
                 };
+            return {
+                getData: function(){
+                    var deferred = $q.defer();
+                    userInformation.getUsers().then(function(data){
+                        var promises = processUsers(data.data.json);
+                        $q.all(promises)
+                            .then(function(){
+                                deferred.resolve(statsNormaliser(rawStatistics));
+                            })
+                            .catch(function(){
+                                deferred.reject();
+                            });
+                    });
+                    return deferred.promise;
+                }
             };
-            return new StatsModel();
     }]);
 })();
 (function () {
@@ -473,17 +518,18 @@
 
     angular.module('Tombola.Academy.Dash.Stats')
         .controller('StatsController', ['$scope', 'StatsModel', function($scope,  statsModel) {
-            $scope.model = statsModel;
-            $scope.model.refresh();
-
+            statsModel.getData()
+                .then(function(data){
+                    $scope.stats = data;
+                });
         }]);
 })();
 (function () {
     'use strict';
     angular.module('myApp')
-        .controller('MainController', ['$scope', '$state','Authenticator', function($scope, $state, authenticator){
+        .controller('MainController', ['$scope', '$state','TokenService', function($scope, $state, tokenService){
             $scope.isAuthenticated = function(){
-                return authenticator.isAuthenticated();
+                return tokenService.isAuthenticated();
             };
             $scope.logout = function (){
                 authenticator.logout();
@@ -494,10 +540,10 @@
 (function () {
     'use strict';
     angular.module('myApp')
-        .run(['$rootScope', '$state','Authenticator', function($rootScope, $state, authenticator){
+        .run(['$rootScope', '$state','TokenService', 'UserInformation', function($rootScope, $state, tokenService, foo){
             $rootScope.$on('$stateChangeStart', function(event, toState){
                 //Note - no sense of roles, will lose where we were headed at login...
-                if(!authenticator.isAuthenticated() && toState.name !== 'login'){
+                if(!tokenService.isAuthenticated() && toState.name !== 'login'){
                     event.preventDefault();
                     $state.go('login');
                 }

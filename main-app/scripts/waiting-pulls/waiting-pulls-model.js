@@ -5,7 +5,7 @@
         .factory('WaitingPullsModel',['$q', 'UserInformation', 'GithubRepoProxy', function ($q, userInformation, githubRepoProxy) {
             var WaitingPullsModel = function (data) {
                 var me = this;
-                var repositoriesToCheck = userInformation.repositoriesToCheck;
+                var repositoriesToCheck = userInformation.getRepositoriesToCheck();
                 me.waitingPulls = [];
 
                 var requestPulls = function(){

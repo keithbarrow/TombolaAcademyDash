@@ -1,7 +1,7 @@
 
 (function () {
     'use strict';
-    angular.module('Tombola.Academy.Dash.Stats')
+    angular.module('Tombola.Academy.Dash.GithubProxy')
         .factory('UserStatsFactory', [function(){
             return function(username, data){
 

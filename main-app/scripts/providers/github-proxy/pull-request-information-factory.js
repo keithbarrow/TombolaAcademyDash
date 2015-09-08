@@ -1,7 +1,7 @@
 (function () {
     'use strict';
 
-    angular.module('Tombola.Academy.Dash.WaitingPulls')
+    angular.module('Tombola.Academy.Dash.GithubProxy')
         .factory('PullRequestInformationFactory', function () {
             var pullRequestInformation = function (data) {
                 var pullRequestInformation = {};

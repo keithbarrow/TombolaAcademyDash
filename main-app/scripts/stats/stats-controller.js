@@ -3,8 +3,9 @@
 
     angular.module('Tombola.Academy.Dash.Stats')
         .controller('StatsController', ['$scope', 'StatsModel', function($scope,  statsModel) {
-            $scope.model = statsModel;
-            $scope.model.refresh();
-
+            statsModel.getData()
+                .then(function(data){
+                    $scope.stats = data;
+                });
         }]);
 })();

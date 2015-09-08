@@ -1,26 +1,27 @@
 (function () {
     'use strict';
     angular.module('Tombola.Academy.Dash.TaProxy')
-        .service('UserInformation', function(){
-            var UserInfo = function() {
-                var me = this;
-                me.users = ['Davros2106', /*'DeclanT',*/ 'Koolaidman64', 'LewisGardner25', 'SalamanderMan'];
-
-                me.repositoriesToCheck = [
-                    {username: 'Davros2106', repositories: ['NoughtsAndCrossesClient']},
-                    {username: 'Koolaidman64', repositories: ['NoughtsAndCrosses']},
-                    {username: 'LewisGardner25', repositories: ['NoughtsAndCrosses']},
-                    {username: 'SalamanderMan', repositories: ['NoughtsAndCrosses']},
-
-                    {username: 'Matthew-Gilmore', repositories: ['HendonHerald', 'NoughtsAndCrosses']},
-                    {username: 'JakeArkleyTombola', repositories: ['NoughtsAndCrosses']},
-                    {username: 'matthew-english', repositories: ['Noughts-and-Crosses']}
-                ];
-
-                me.login = function (username, password){
-                    return 'STUB TOKEN  FOR' + username;
-                };
+        .service('UserInformation', ['$http', 'TokenService', function($http, tokenService){
+            return {
+                //TODO: ferry off URLS somewhere
+                //TODO: get repos call
+                getRepositoriesToCheck: function(){
+                    return [
+                        {username: 'Davros2106', repositories: ['NoughtsAndCrossesClient']},
+                        {username: 'Koolaidman64', repositories: ['NoughtsAndCrosses']},
+                        {username: 'SalamanderMan', repositories: ['NoughtsAndCrosses']},
+                    ];
+                },
+                getUsers: function (){
+                    var request = {
+                        method: 'GET',
+                        url: 'https://localhost:3000/api/githubusers',
+                        headers:{
+                            'x-access-token': tokenService.getToken()
+                        }
+                    };
+                    return $http(request);
+                }
             };
-            return new UserInfo();
-    });
+    }]);
 })();

@@ -1,9 +1,9 @@
 (function () {
     'use strict';
     angular.module('myApp')
-        .controller('MainController', ['$scope', '$state','Authenticator', function($scope, $state, authenticator){
+        .controller('MainController', ['$scope', '$state','TokenService', function($scope, $state, tokenService){
             $scope.isAuthenticated = function(){
-                return authenticator.isAuthenticated();
+                return tokenService.isAuthenticated();
             };
             $scope.logout = function (){
                 authenticator.logout();

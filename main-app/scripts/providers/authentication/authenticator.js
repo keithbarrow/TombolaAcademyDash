@@ -1,25 +1,32 @@
 (function () {
     'use strict';
     angular.module('Tombola.Academy.Dash.Authentication')
-        .service('Authenticator', [ '$state', 'UserInformation', function ($state, userInformation){
-        var token = null;
-
+        .service('Authenticator', ['$http', 'TokenService', function ($http, tokenService){
         return {
             login: function(username, password){
-                token = userInformation.login(username, password);
-                if(this.isAuthenticated()){
-                    $state.go('waitingPulls'); //No sense of where user was going...
-                }
+                    var request = {
+                        method: 'POST',
+                        url: 'https://localhost:3000/authenticate',
+                        withCredentials: false,
+                        data: {"username":username, "password":password}
+                    };
+                    $http(request).success(function(data){
+                        if(data.success){
+                            tokenService.setToken(data.token);
+                        }
+                        else{
+                            tokenService.resetToken();
+                        }
+                    })
+                    .error(function(data, status) {
+                        console.log(data);
+                        console.log(status);
+                        tokenService.resetToken();
+                    });
+
             },
             logout: function() {
-                token = null;
-                $state.go('login');
-            },
-            isAuthenticated : function(){
-                return token !== null;
-            },
-            getToken: function (){
-                return token;
+                tokenService.resetToken();
             }
         };
     }]);
