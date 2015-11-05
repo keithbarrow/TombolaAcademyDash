@@ -135,3 +135,32 @@ form.login input {
 form.login input[type=button] {
   margin-left: 75px;
 }
+.error {
+  color: #cc8888;
+}
+.error h3 {
+  color: #cc8888;
+}
+input.ng-dirty.ng-invalid {
+  border: 5px solid #cc8888;
+  box-shadow: 0 0 10px #cc8888;
+}
+table.admin {
+  background: #003466;
+  color: #aaaaaa;
+}
+table.admin tr th {
+  font-weight: bold;
+}
+table.admin tr td {
+  padding: 3px;
+}
+form.admin {
+  background: #003466;
+  margin: 10px;
+}
+form.admin label {
+  width: 90px;
+  color: #aaaaaa;
+  font-weight: bold;
+}

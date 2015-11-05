@@ -43,7 +43,7 @@ gulp.task('copy-main-html', function(){
 });
 
 gulp.task('copy-partial-html', function(){
-    return gulp.src('./main-app/partials/*.html')
+    return gulp.src('./main-app/partials/**/*.html')
         .pipe(copy('./.build/', { prefix:1 }));
 });
 
@@ -63,6 +63,8 @@ gulp.task('concat-scripts', function() {
         './main-app/scripts/stats/stats-normaliser.js',
         './main-app/scripts/stats/stats-model.js',
         './main-app/scripts/stats/stats-controller.js',
+        './main-app/scripts/admin/**/services/*.js',
+        './main-app/scripts/admin/**/controllers/*.js',
         './main-app/scripts/main-controller.js',
         './main-app/scripts/module-run.js'
         ])
@@ -75,7 +77,7 @@ gulp.task('server', function () {
     server.run(['app.js']);
     gulp.watch(['main-app/less/**/*.less'], ['less', server.notify]);
     gulp.watch(['main-app/index.html'], ['copy-main-html', server.notify]);
-    gulp.watch(['main-app/partials/*.html'], ['copy-partial-html', server.notify]);
+    gulp.watch(['main-app/partials/**/*.html'], ['copy-partial-html', server.notify]);
     gulp.watch(['main-app/scripts/**/*.js'], ['lint','concat-scripts',server.notify]);
     gulp.watch(['app/images/**/*'], ['copy-images', server.notify]);
 });

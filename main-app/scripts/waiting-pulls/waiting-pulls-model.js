@@ -7,25 +7,29 @@
                 var me = this;
                 var repositoriesToCheck = userInformation.getRepositoriesToCheck();
                 me.waitingPulls = [];
+                me.errors = [];
 
                 var requestPulls = function(){
-                    var promises = [];
+                    var i,
+                        j,
+                        promises = [];
 
-                    for (var i = 0; i < repositoriesToCheck.length; i++) {
-                        var username = repositoriesToCheck[i].username;
-                        for (var j = 0; j < repositoriesToCheck[i].repositories.length; j++) {
-                            var repositoryName = repositoriesToCheck[i].repositories[j];
-                            promises.push(githubRepoProxy(username, repositoryName));
+                    for (i = 0; i < repositoriesToCheck.length; i++) {
+                        for (j = 0; j < repositoriesToCheck[i].repositories.length; j++) {
+                            promises.push(githubRepoProxy(repositoriesToCheck[i].username, repositoriesToCheck[i].repositories[j]));
                         }
                     }
-
                     return promises;
                 };
 
                 var update = function (waitingPullsResult) {
                     me.waitingPulls = [];
+                    me.errors = [];
                     for(var i = 0; i < waitingPullsResult.length; i++){
-                        if(waitingPullsResult[i].pullRequests){
+                        if(waitingPullsResult[i].isError){
+                            me.errors.push(waitingPullsResult[i].data);
+                        }
+                        else if(waitingPullsResult[i].pullRequests){
                             me.waitingPulls.push(waitingPullsResult[i]);
                         }
                     }
@@ -35,6 +39,7 @@
                     var deferred = $q.defer();
                     $q.all(requestPulls()).
                         then(function(waitingPullsResult){
+
                             update(waitingPullsResult);
                             deferred.resolve();
                         })

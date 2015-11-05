@@ -2,40 +2,42 @@
     'use strict';
 
     angular.module('Tombola.Academy.Dash.Stats')
-        .factory('StatsModel',['$q', 'GitHubUserProxy', 'UserInformation', 'StatsNormaliser', function ($q, gitHubUserProxy, userInformation, statsNormaliser) {
-            var rawStatistics = [],
-                getDataForUser = function (username){
+        .factory('StatsModel',['$q', 'GitHubUserProxy', 'ApiDataConverter', 'UserInformation', 'StatsNormaliser', function ($q, gitHubUserProxy, apiDataConverter, userInformation, statsNormaliser) {
+            var getDataForUser = function (username){
                     var deferred = $q.defer();
                     gitHubUserProxy(username).then(function(userStats){
-                        rawStatistics.push(userStats);
-                        deferred.resolve();
+                        deferred.resolve(userStats);
                     })
                     .catch(function(error){
-                        deferred.reject(error);
+                        deferred.reject();
                     });
                     return deferred.promise;
                 },
-                processUsers = function(users){
+                getDataForUsers = function(githubUsers){
                     var promises = [],
                         i;
-                    for (i = 0; i < users.length; i++) {
-                        console.log(users[i].username);
-                        promises.push(getDataForUser(users[i].username));
+                    for (i = 0; i < githubUsers.length; i++) {
+                        //TODO: add select on to API and do that instead.
+                        //TODO: also - this doesn't seem to work....
+                        if(!githubUsers[i].includeinstats){
+                            continue;
+                        }
+                        promises.push(getDataForUser(githubUsers[i].username));
                     }
                     return promises;
                 };
+
             return {
                 getData: function(){
                     var deferred = $q.defer();
-                    userInformation.getUsers().then(function(data){
-                        var promises = processUsers(data.data.json);
-                        $q.all(promises)
-                            .then(function(){
-                                deferred.resolve(statsNormaliser(rawStatistics));
-                            })
-                            .catch(function(){
-                                deferred.reject();
-                            });
+                    userInformation.getUsers(apiDataConverter.getJson).then(function(results){
+                            $q.all(getDataForUsers(results))
+                                .then(function(rawStatistics){
+                                    deferred.resolve(statsNormaliser(rawStatistics));
+                                })
+                                .catch(function(){
+                                    deferred.reject();
+                                });
                     });
                     return deferred.promise;
                 }

@@ -2,6 +2,7 @@
 @nyanDuration: 300s;
 @mainBackgroundColor: #003466;
 @defaultTextColor: #AAAAAA;
+@errorTextColor: #CC8888;
 
 body{
     background-color: @mainBackgroundColor;
@@ -123,5 +124,41 @@ form.login {
   }
   input[type=button] {
     margin-left: 75px;
+  }
+}
+
+.error {
+  color: @errorTextColor;
+  h3 {
+    color: @errorTextColor;
+  }
+}
+
+input.ng-dirty.ng-invalid {
+  border: 5px solid @errorTextColor;
+  box-shadow: 0 0 10px @errorTextColor;
+}
+
+//admin
+table.admin {
+  background: @mainBackgroundColor;
+  color: @defaultTextColor;
+  tr {
+    th {
+      font-weight: bold;
+    }
+    td {
+      padding: 3px;
+    }
+  }
+}
+
+form.admin {
+  background: @mainBackgroundColor;
+  margin: 10px;
+  label {
+    width: 90px;
+    color: @defaultTextColor;
+    font-weight: bold;
   }
 }

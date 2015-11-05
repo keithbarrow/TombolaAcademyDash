@@ -9,7 +9,7 @@
                     deferred.resolve(userStatsFactory(username, data.data));
                 })
                 .catch(function(){
-                    deferred.reject('User Proxy Error');
+                    deferred.resolve({isError: true, data: {username: username}});
                 });
             return deferred.promise;
         };

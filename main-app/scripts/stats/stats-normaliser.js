@@ -4,64 +4,59 @@
     angular.module('Tombola.Academy.Dash.Stats')
         .factory('StatsNormaliser',[function () {
 
-            var createDayData  = function (date, users){
+            var createEmptyWorkingDayData  = function (date, rawStatistics){
                 var i,
-                    numberUsers = users.length,
-                    data = {date: date, userdata:[]};
+                    rawStatisticsLength = rawStatistics.length,
+                    data = {date: date.format('DD/MM/YYYY'), dateUS: date.format('M/D/YYYY'), userdata:[]};
 
-                for (i=0; i<numberUsers; i++){
-                    data.userdata.push({ user:users[i], commits:0, pushes:0, pullRequests:0 });
+                for (i=0; i< rawStatisticsLength; i++){
+                    data.userdata.push({ user:rawStatistics[i].username, commits:0, pushes:0, pullRequests:0 });
                 }
                 return data;
             };
 
-            var getUsers = function(rawStatistics){
-                var i,
-                    numberOfUsers = rawStatistics.length,
-                    usernames= [];
-
-                for (i=0; i < numberOfUsers; i++){
-                    usernames.push(rawStatistics[i].username);
-                }
-                return usernames;
+            var normalisePersonsWorkingDay = function(rawPersonDayStatistics, normalisedPersonDayStatistics){
+                normalisedPersonDayStatistics.crossCheck = rawPersonDayStatistics;
+                normalisedPersonDayStatistics.commits = rawPersonDayStatistics.commits;
+                normalisedPersonDayStatistics.pullRequests = rawPersonDayStatistics.pullRequests;
+                normalisedPersonDayStatistics.pushes = rawPersonDayStatistics.pushes;
             };
 
-            return function(rawStatistics){
+            var normaliseAllWorkingDaysForPerson = function(rawPersonStatistics, normalisedUserData, currentDate){
                 var i,
-                    j,
-                    rawStatisticsLength = rawStatistics.length,
-                    normalisedStatistics = [],
-                    now = moment().startOf('day'),
-                    workingDate = moment().startOf('day').subtract(1, 'years'),
-                    workingDateString,
-                    workingData,
-                    started = false,
-                    usernames = getUsers(rawStatistics);
-
-                function populateUserData() {
-                    for (j = 0; j < userStats.dayData.length; j++) {
-                        if (userStats.dayData[j].date == workingDateString) {
-                            workingData.userdata[i].crossCheck = userStats;
-                            workingData.userdata[i].commits = userStats.dayData[j].commits;
-                            workingData.userdata[i].pullRequests = userStats.dayData[j].pullRequests;
-                            workingData.userdata[i].pushes = userStats.dayData[j].pushes;
-                            started = true;
-                            break;
-                        }
+                    dayDataLength = rawPersonStatistics.dayData.length;
+                for(i = 0; i < dayDataLength; i++){
+                    if(currentDate !== rawPersonStatistics.dayData[i].date){
+                        continue;
                     }
+                    //This indexing is predicated on the normalised stats users being in the same order as the raw data users
+                    // Which it should be as the former is created from the latter§
+                    normalisePersonsWorkingDay(rawPersonStatistics.dayData[i], normalisedUserData);
+                    break;
                 }
+            };
 
-                while (workingDate <= now){
-                    workingDateString = workingDate.format('DD/MM/YYYY');
-                    workingData = createDayData(workingDateString, usernames);
+            var normaliseWorkingDayData = function(rawStatistics, normalisedDayStatistics){
+                var i,
+                    rawStatisticsLength = rawStatistics.length;
+                for(i=0; i < rawStatisticsLength; i++){
 
-                    for( i = 0; i <  rawStatisticsLength; i++) {
-                        var userStats =  rawStatistics[i];
-                        populateUserData();
+                    if(rawStatistics[i].dayData.length === 0){
+                        continue;
                     }
-                    if(started){
-                        normalisedStatistics.push(workingData);
-                    }
+                    normaliseAllWorkingDaysForPerson(rawStatistics[i], normalisedDayStatistics.userdata[i], normalisedDayStatistics.dateUS);
+                }
+            };
+
+            return function(statisticsToConvert){
+                var normalisedStatistics = [],
+                    workingDate = moment().startOf('day').subtract(1, 'month'),
+                    normalisedDayStatistics;
+
+                while (workingDate <= moment().startOf('day')){
+                    normalisedDayStatistics= createEmptyWorkingDayData(workingDate, statisticsToConvert);
+                    normaliseWorkingDayData(statisticsToConvert, normalisedDayStatistics);
+                    normalisedStatistics.push(normalisedDayStatistics);
                     workingDate.add(1,'day');
                 }
                 return normalisedStatistics;

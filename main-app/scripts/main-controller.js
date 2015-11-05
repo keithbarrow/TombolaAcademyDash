@@ -6,7 +6,7 @@
                 return tokenService.isAuthenticated();
             };
             $scope.logout = function (){
-                authenticator.logout();
+                tokenService.resetToken();
             };
             $state.go('waitingPulls');
     }]);

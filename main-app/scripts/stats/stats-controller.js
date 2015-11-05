@@ -5,7 +5,7 @@
         .controller('StatsController', ['$scope', 'StatsModel', function($scope,  statsModel) {
             statsModel.getData()
                 .then(function(data){
-                    $scope.stats = data;
+                    $scope.statistics = data;
                 });
         }]);
 })();

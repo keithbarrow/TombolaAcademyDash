@@ -9,7 +9,7 @@
                     deferred.resolve(pullRequestInformationFactory(data));
                 })
                 .catch(function(){
-                    deferred.reject('Repo Proxy Error');
+                    deferred.resolve({isError: true, data:{username:username, repositoryName: repositoryName}});
                 });
 
             return deferred.promise;

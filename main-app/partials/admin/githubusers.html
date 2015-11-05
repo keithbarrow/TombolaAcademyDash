@@ -1,0 +1,28 @@
+<h2>Git Hub Users</h2>
+<form class="admin" name="userList">
+    <table class="admin">
+        <tr><th>Username</th><th>forename</th><th>surname</th><th>Include</th><th>&nbsp;</th></tr>
+        <tr ng-repeat="githubuser in (githubUserService.githubUsers | orderBy:'username')">
+            <td><input type="text" ng-model="githubuser.username" required ng-blur="updateUsername(githubuser)"></td>
+            <td><input type="text" ng-model="githubuser.forename" required ng-blur="updateForename(githubuser)"></td>
+            <td><input type="text" ng-model="githubuser.surname" required ng-blur="updateSurname(githubuser)"></td>
+            <td><input type="checkbox" ng-checked="githubuser.includeinstats[0]" ng-click="githubUserService.toggleInclude(githubuser)"></td>
+            <td><input type="button" value="remove" ng-click="remove(githubuser)"></td>
+        </tr>
+    </table>
+</form>
+<form class="admin" name="newUser">
+    <div>
+        <label for="username">Username</label>
+        <input id="username" type="text" ng-model="githubUserService.newUser.username" required>
+    </div>
+    <div>
+        <label for="forename">Forename</label>
+        <input id="forename" type="text" ng-model="githubUserService.newUser.forename" required>
+    </div>
+    <div>
+        <label for="surname">Surname</label>
+        <input id="surname" type="text" ng-model="githubUserService.newUser.surname" required>
+    </div>
+    <div><input type="submit" value="add" ng-click="add()"> </div>
+</form>

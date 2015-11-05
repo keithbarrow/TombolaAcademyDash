@@ -1,0 +1,8 @@
+<nav>
+    <ul class="nav nav-pills" ng-show="isAuthenticated()">
+        <li><a ui-sref="admin.githubusers">Github Users</a></li>
+        <li><a ui-sref="waitingPulls">Repositories</a></li>
+    </ul>
+</nav>
+<h1>Admin</h1>
+<div ui-view></div>
