@@ -1,10 +1,9 @@
 (function () {
     'use strict';
     angular.module('Tombola.Academy.Dash.Admin.GithubUsers')
-        .service('GithubUserService', ['UserInformation','ApiDataConverter', function(userInformation, apiDataConverter){
+        .service('GithubUserService', ['TaGithubUserProxy','ApiDataConverter', function(taGithubUserProxy, apiDataConverter){
             var me= this,
                 updateCallback;
-
             me.githubUsers = [];
             me.newUser = {};
 
@@ -17,7 +16,7 @@
             };
 
             me.getCurrentUsers = function() {
-                userInformation.getUsers(apiDataConverter.getJson)
+                taGithubUserProxy.get(apiDataConverter.getJson)
                     .then(function (data) {
                         me.githubUsers = data;
                         if(updateCallback){
@@ -30,8 +29,8 @@
             };
 
             me.updateUser = function(id, update){
-                userInformation.updateUser(id, update)
-                    .then(function(data){
+                taGithubUserProxy.update(id, update)
+                    .then(function(){
                         me.getCurrentUsers();
                     })
                     .catch(function (response) {
@@ -65,7 +64,7 @@
             };
 
             me.addUser = function(){
-                userInformation.addUser(me.newUser)
+                taGithubUserProxy.add(me.newUser)
                     .then(function(){
                         me.resetNewUser();
                         me.getCurrentUsers();
@@ -76,7 +75,7 @@
             };
 
             me.removeUser = function(user){
-                userInformation.removeUser(user.id)
+                taGithubUserProxy.remove(user.id)
                     .then(function(){
                         me.getCurrentUsers();
                     })

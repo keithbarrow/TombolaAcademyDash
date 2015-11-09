@@ -2,7 +2,7 @@
     'use strict';
 
     angular.module('Tombola.Academy.Dash.Stats')
-        .factory('StatsModel',['$q', 'GitHubUserProxy', 'ApiDataConverter', 'UserInformation', 'StatsNormaliser', function ($q, gitHubUserProxy, apiDataConverter, userInformation, statsNormaliser) {
+        .factory('StatsModel',['$q', 'TaGithubUserProxy', 'ApiDataConverter', 'GitHubUserProxy', 'StatsNormaliser', function ($q, taGithubUserProxy, apiDataConverter, gitHubUserProxy, statsNormaliser) {
             var getDataForUser = function (username){
                     var deferred = $q.defer();
                     gitHubUserProxy(username).then(function(userStats){
@@ -18,11 +18,9 @@
                         i;
                     for (i = 0; i < githubUsers.length; i++) {
                         //TODO: add select on to API and do that instead.
-                        //TODO: also - this doesn't seem to work....
-                        if(!githubUsers[i].includeinstats){
-                            continue;
+                        if(githubUsers[i].includeinstats[0]){
+                            promises.push(getDataForUser(githubUsers[i].username));
                         }
-                        promises.push(getDataForUser(githubUsers[i].username));
                     }
                     return promises;
                 };
@@ -30,14 +28,15 @@
             return {
                 getData: function(){
                     var deferred = $q.defer();
-                    userInformation.getUsers(apiDataConverter.getJson).then(function(results){
-                            $q.all(getDataForUsers(results))
-                                .then(function(rawStatistics){
-                                    deferred.resolve(statsNormaliser(rawStatistics));
-                                })
-                                .catch(function(){
-                                    deferred.reject();
-                                });
+                    taGithubUserProxy.get(apiDataConverter.getJson).then(function(results){
+                        $q.all(getDataForUsers(results))
+
+                            .then(function(rawStatistics){
+                                deferred.resolve(statsNormaliser(rawStatistics));
+                            })
+                            .catch(function(){
+                                deferred.reject();
+                            });
                     });
                     return deferred.promise;
                 }

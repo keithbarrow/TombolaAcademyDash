@@ -295,83 +295,145 @@
 (function () {
     'use strict';
     angular.module('Tombola.Academy.Dash.TaProxy')
-        .service('UserInformation', ['$http', '$q', 'TokenService', function($http, $q, tokenService){
-            var callServer = function (request, successTransform, failTransform){
-                var deferred = $q.defer();
-                $http(request).then(function(response){
-                    if(successTransform){
-                        deferred.resolve(successTransform(response));
-                    }
-                    else{
-                        deferred.resolve(response);
-                    }
-                }).catch(function(response){
-                    //TODO: log
-                    if(failTransform) {
-                        deferred.reject(failTransform(response));
-                    }
-                    else{
-                        deferred.reject(response);
-                    }
-                });
-                return deferred.promise;
-            };
-
-            return {
-                //TODO: ferry off URLS somewhere
-                //TODO: get repos call
-                getRepositoriesToCheck: function(){
-                    return [
-                        {username: 'IanMcLeodTombola', repositories: ['Tombola.Games.NoughtsAndCrosses']},
-                        {username: 'kathHen', repositories: ['NoughtsandCrosses']},
-                        {username: 'SalamanderMan', repositories: ['NoughtsAndCrosses']}
-                    ];
-                },
-
-                getUsers: function (successTransform, failTransform){
-                    var request = {
-                            method: 'GET',
-                            url: 'https://localhost:3000/api/githubusers',
-                            headers:{
-                                'x-access-token': tokenService.getToken()
-                            }
+        .factory('TaBaseProxy', ['$http', '$q', 'TokenService', function($http, $q, tokenService){
+            return function(tablename) {
+                var me = this,
+                    baseUrl = 'https://localhost:3000/api/', //TODO: inject via config
+                    getTableUrl = function() {
+                        return baseUrl+ tablename;
+                    },
+                    getTableUrlWithId = function(id) {
+                        return getTableUrl() + '/' + id;
+                    },
+                    getRequestHeader = function(){
+                        return {
+                            'x-access-token': tokenService.getToken()
                         };
-                    return callServer(request, successTransform, failTransform);
-                },
+                    },
 
-                updateUser: function(id, updateObject, successTransform, failTransform) {
-                    var request = {
-                        method: 'PUT',
-                        url: 'https://localhost:3000/api/githubusers/'+ id,
-                        headers:{
-                            'x-access-token': tokenService.getToken()
-                        },
-                        data: updateObject
-                    };
-                    return callServer(request, successTransform, failTransform);
-                },
-
-                addUser: function(newUser, successTransform, failTransform){
-                    var request = {
-                        method: 'POST',
-                        url: 'https://localhost:3000/api/githubusers',
-                        headers:{
-                            'x-access-token': tokenService.getToken()
-                        },
-                        data: newUser
-                    };
-                    return callServer(request, successTransform, failTransform);
-                },
-                removeUser: function(id, successTransform, failTransform){
-                    var request = {
-                        method: 'DELETE',
-                        url: 'https://localhost:3000/api/githubusers/' + id,
-                        headers:{
-                            'x-access-token': tokenService.getToken()
+                    createRequest = function(method, id, data){
+                        var request = {
+                            method: method,
+                            url: id ? getTableUrlWithId(id) : getTableUrl(),
+                            headers: getRequestHeader()
+                        };
+                        if (data){
+                            request.data  = data;
                         }
+                        return request;
+                    },
+
+                    callApi = function (request, successTransform, failTransform){
+                        var deferred = $q.defer();
+                        $http(request).then(function(response){
+                            if(successTransform){
+                                deferred.resolve(successTransform(response));
+                            }
+                            else{
+                                deferred.resolve(response);
+                            }
+                        }).catch(function(response){
+                            //TODO: log
+                            if(failTransform) {
+                                deferred.reject(failTransform(response));
+                            }
+                            else{
+                                deferred.reject(response);
+                            }
+                        });
+                        return deferred.promise;
                     };
-                    return callServer(request, successTransform, failTransform);
-                }
+
+
+                me.get = function (successTransform, failTransform){
+                    var request = createRequest('GET');
+                    return callApi(request, successTransform, failTransform);
+                };
+
+                me.update = function(id, updateObject, successTransform, failTransform) {
+                    var request = createRequest('PUT', id, updateObject);
+                    return callApi(request, successTransform, failTransform);
+                };
+
+                me.add = function(newObject, successTransform, failTransform){
+                    var request = createRequest('POST', null, newObject);
+                    return callApi(request, successTransform, failTransform);
+                };
+
+                me.remove = function(id, successTransform, failTransform){
+                    var request = createRequest('DELETE', id);
+                    return callApi(request, successTransform, failTransform);
+                };
+            };
+    }]);
+})();
+(function () {
+    'use strict';
+    angular.module('Tombola.Academy.Dash.TaProxy')
+        .service('TaGithubRepositoryProxy', ['$q', 'TaBaseProxy', 'TaGithubUserProxy', 'ApiDataConverter', function($q, TaBaseProxy, taGithubUserProxy, apiDataConverter){
+
+            var proxy = new TaBaseProxy('githubrepositories');
+            return {
+                getRepositoriesToCheck: function(){
+                    var deferred = $q.defer(),
+                        promises = [taGithubUserProxy.get(apiDataConverter.getJson), this.get(apiDataConverter.getJson)],
+                        getRepositoriesForUserId = function(githubRepositories, userId){
+                            return _.filter(githubRepositories, function(githubRepository) {
+                                return githubRepository.githubuserid == userId;
+                            });
+                        },
+                        createRepositoryEntryForUser = function(githubUser, githubRepositories){
+                            var repositoriesForUser = getRepositoriesForUserId(githubRepositories, githubUser.id);
+                            if(repositoriesForUser.length === 0){
+                                return;
+                            }
+                            return {
+                                username: githubUser.username,
+                                repositories:_.map(repositoriesForUser, function(repository){
+                                    return repository.repositoryname;
+                                })
+                            };
+                        },
+                        collateRepositories = function (githubUsers, githubRepositories){
+                            var currentEntry,
+                                i,
+                                repositoriesToGet =[];
+                            for(i=0; i< githubUsers.length; i++){
+                                currentEntry = createRepositoryEntryForUser(githubUsers[i], githubRepositories);
+                                if(!currentEntry){
+                                    continue;
+                                }
+                                repositoriesToGet.push(currentEntry);
+                            }
+                            return repositoriesToGet;
+                    };
+
+                    //TODO: this could all be improved by allowing where clauses - need to investigate syntax and poss available parser...
+                    //TODO: ODATA looked promising, also https://parse.com/docs/rest/guide/
+                    $q.all(promises).then(function(results){
+                        deferred.resolve(collateRepositories(results[0], results[1]));
+                    });
+                    return deferred.promise;
+                },
+
+                get: proxy.get,
+                update: proxy.update,
+                add: proxy.add,
+                remove: proxy.remove
+            };
+        }]);
+})();
+(function () {
+    'use strict';
+    angular.module('Tombola.Academy.Dash.TaProxy')
+        .service('TaGithubUserProxy', ['TaBaseProxy', function(TaBaseProxy){
+
+            var proxy = new TaBaseProxy('githubusers');
+            return {
+                get: proxy.get,
+                update: proxy.update,
+                add: proxy.add,
+                remove: proxy.remove
             };
     }]);
 })();
@@ -391,56 +453,63 @@
     'use strict';
 
     angular.module('Tombola.Academy.Dash.WaitingPulls')
-        .factory('WaitingPullsModel',['$q', 'UserInformation', 'GithubRepoProxy', function ($q, userInformation, githubRepoProxy) {
-            var WaitingPullsModel = function (data) {
-                var me = this;
-                var repositoriesToCheck = userInformation.getRepositoriesToCheck();
+        .factory('WaitingPullsModel',['$q', 'TaGithubRepositoryProxy', 'GithubRepoProxy', function ($q, taGithubRepositoryProxy, githubRepoProxy) {
+            var WaitingPullsModel = function () {
+                var me = this,
+                    addError = function (error){
+                        me.errors.push(error);
+                    },
+                    addWaitingPull = function (waitingPullsResult){
+                        me.waitingPulls.push(waitingPullsResult);
+                    },
+                    requestPullsForUser = function (userRepositoryList, promises) {
+                        var i;
+                        for (i = 0; i < userRepositoryList.repositories.length; i++) {
+                            promises.push(githubRepoProxy(userRepositoryList.username, userRepositoryList.repositories[i]));
+                    }},
+
+                    requestPulls = function(userRepositoryLists){
+                        var i,
+                            promises = [];
+                        for (i = 0; i < userRepositoryLists.length; i++) {
+                            requestPullsForUser(userRepositoryLists[i], promises);
+                        }
+                        return promises;
+                    },
+
+                    update = function (waitingPullsResults) {
+                        for(var i = 0; i < waitingPullsResults.length; i++){
+                            if(waitingPullsResults[i].isError){
+                                addError(waitingPullsResults[i].data);
+                            }
+                            else if(waitingPullsResults[i].pullRequests){
+                                addWaitingPull(waitingPullsResults[i]);
+                            }
+                        }
+                    };
+
                 me.waitingPulls = [];
                 me.errors = [];
 
-                var requestPulls = function(){
-                    var i,
-                        j,
-                        promises = [];
-
-                    for (i = 0; i < repositoriesToCheck.length; i++) {
-                        for (j = 0; j < repositoriesToCheck[i].repositories.length; j++) {
-                            promises.push(githubRepoProxy(repositoriesToCheck[i].username, repositoriesToCheck[i].repositories[j]));
-                        }
-                    }
-                    return promises;
-                };
-
-                var update = function (waitingPullsResult) {
-                    me.waitingPulls = [];
-                    me.errors = [];
-                    for(var i = 0; i < waitingPullsResult.length; i++){
-                        if(waitingPullsResult[i].isError){
-                            me.errors.push(waitingPullsResult[i].data);
-                        }
-                        else if(waitingPullsResult[i].pullRequests){
-                            me.waitingPulls.push(waitingPullsResult[i]);
-                        }
-                    }
-                };
-
                 me.refresh = function(){
                     var deferred = $q.defer();
-                    $q.all(requestPulls()).
-                        then(function(waitingPullsResult){
-
-                            update(waitingPullsResult);
-                            deferred.resolve();
-                        })
-                        .catch(function(message){
-                            deferred.reject(message);
-                        });
+                    me.waitingPulls = [];
+                    me.errors = [];
+                    taGithubRepositoryProxy.getRepositoriesToCheck().then(function(userRepositoryList){
+                        $q.all(requestPulls(userRepositoryList)).
+                            then(function(waitingPullsResult){
+                                update(waitingPullsResult);
+                                deferred.resolve();
+                            })
+                            .catch(function(message){
+                                deferred.reject(message);
+                            });
+                    });
                     return deferred.promise;
-                };
 
+                };
             };
             return new WaitingPullsModel();
-
         }]);
 })();
 
@@ -555,7 +624,7 @@
     'use strict';
 
     angular.module('Tombola.Academy.Dash.Stats')
-        .factory('StatsModel',['$q', 'GitHubUserProxy', 'ApiDataConverter', 'UserInformation', 'StatsNormaliser', function ($q, gitHubUserProxy, apiDataConverter, userInformation, statsNormaliser) {
+        .factory('StatsModel',['$q', 'TaGithubUserProxy', 'ApiDataConverter', 'GitHubUserProxy', 'StatsNormaliser', function ($q, taGithubUserProxy, apiDataConverter, gitHubUserProxy, statsNormaliser) {
             var getDataForUser = function (username){
                     var deferred = $q.defer();
                     gitHubUserProxy(username).then(function(userStats){
@@ -571,11 +640,9 @@
                         i;
                     for (i = 0; i < githubUsers.length; i++) {
                         //TODO: add select on to API and do that instead.
-                        //TODO: also - this doesn't seem to work....
-                        if(!githubUsers[i].includeinstats){
-                            continue;
+                        if(githubUsers[i].includeinstats[0]){
+                            promises.push(getDataForUser(githubUsers[i].username));
                         }
-                        promises.push(getDataForUser(githubUsers[i].username));
                     }
                     return promises;
                 };
@@ -583,14 +650,15 @@
             return {
                 getData: function(){
                     var deferred = $q.defer();
-                    userInformation.getUsers(apiDataConverter.getJson).then(function(results){
-                            $q.all(getDataForUsers(results))
-                                .then(function(rawStatistics){
-                                    deferred.resolve(statsNormaliser(rawStatistics));
-                                })
-                                .catch(function(){
-                                    deferred.reject();
-                                });
+                    taGithubUserProxy.get(apiDataConverter.getJson).then(function(results){
+                        $q.all(getDataForUsers(results))
+
+                            .then(function(rawStatistics){
+                                deferred.resolve(statsNormaliser(rawStatistics));
+                            })
+                            .catch(function(){
+                                deferred.reject();
+                            });
                     });
                     return deferred.promise;
                 }
@@ -611,10 +679,9 @@
 (function () {
     'use strict';
     angular.module('Tombola.Academy.Dash.Admin.GithubUsers')
-        .service('GithubUserService', ['UserInformation','ApiDataConverter', function(userInformation, apiDataConverter){
+        .service('GithubUserService', ['TaGithubUserProxy','ApiDataConverter', function(taGithubUserProxy, apiDataConverter){
             var me= this,
                 updateCallback;
-
             me.githubUsers = [];
             me.newUser = {};
 
@@ -627,7 +694,7 @@
             };
 
             me.getCurrentUsers = function() {
-                userInformation.getUsers(apiDataConverter.getJson)
+                taGithubUserProxy.get(apiDataConverter.getJson)
                     .then(function (data) {
                         me.githubUsers = data;
                         if(updateCallback){
@@ -640,8 +707,8 @@
             };
 
             me.updateUser = function(id, update){
-                userInformation.updateUser(id, update)
-                    .then(function(data){
+                taGithubUserProxy.update(id, update)
+                    .then(function(){
                         me.getCurrentUsers();
                     })
                     .catch(function (response) {
@@ -675,7 +742,7 @@
             };
 
             me.addUser = function(){
-                userInformation.addUser(me.newUser)
+                taGithubUserProxy.add(me.newUser)
                     .then(function(){
                         me.resetNewUser();
                         me.getCurrentUsers();
@@ -686,7 +753,7 @@
             };
 
             me.removeUser = function(user){
-                userInformation.removeUser(user.id)
+                taGithubUserProxy.remove(user.id)
                     .then(function(){
                         me.getCurrentUsers();
                     })
@@ -772,7 +839,7 @@
 (function () {
     'use strict';
     angular.module('myApp')
-        .run(['$rootScope', '$state','TokenService', 'UserInformation', function($rootScope, $state, tokenService){
+        .run(['$rootScope', '$state','TokenService', function($rootScope, $state, tokenService){
             $rootScope.$on('$stateChangeStart', function(event, toState){
                 //TODO: roles for admin
                 //Note - no sense of roles, will lose where we were headed at login...
