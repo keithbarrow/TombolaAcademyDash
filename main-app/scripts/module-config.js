@@ -22,9 +22,14 @@
                     controller:'GithubUsersController'
                 })
                 .state('admin.githubusers', {
-                    url:'/admin/githubusers',
+                    url:'/githubusers',
                     controller:'GithubUsersController',
                     templateUrl: 'partials/admin/githubusers.html'
+                })
+                .state('admin.githubrepositories', {
+                    url:'/githubrepos',
+                    controller:'GithubRepositoriesController',
+                    templateUrl: 'partials/admin/githubrepos.html'
                 });
         }]);
 })();

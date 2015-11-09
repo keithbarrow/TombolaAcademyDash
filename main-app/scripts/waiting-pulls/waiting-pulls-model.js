@@ -32,6 +32,8 @@
                                 addError(waitingPullsResults[i].data);
                             }
                             else if(waitingPullsResults[i].pullRequests){
+                                waitingPullsResults[i].pullRequests = _.sortBy(waitingPullsResults[i].pullRequests, 'created');
+                                console.log(waitingPullsResults[i].pullRequests);
                                 addWaitingPull(waitingPullsResults[i]);
                             }
                         }

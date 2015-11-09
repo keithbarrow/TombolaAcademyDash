@@ -66,9 +66,14 @@
                     controller:'GithubUsersController'
                 })
                 .state('admin.githubusers', {
-                    url:'/admin/githubusers',
+                    url:'/githubusers',
                     controller:'GithubUsersController',
                     templateUrl: 'partials/admin/githubusers.html'
+                })
+                .state('admin.githubrepositories', {
+                    url:'/githubrepos',
+                    controller:'GithubRepositoriesController',
+                    templateUrl: 'partials/admin/githubrepos.html'
                 });
         }]);
 })();
@@ -483,6 +488,8 @@
                                 addError(waitingPullsResults[i].data);
                             }
                             else if(waitingPullsResults[i].pullRequests){
+                                waitingPullsResults[i].pullRequests = _.sortBy(waitingPullsResults[i].pullRequests, 'created');
+                                console.log(waitingPullsResults[i].pullRequests);
                                 addWaitingPull(waitingPullsResults[i]);
                             }
                         }
@@ -678,6 +685,94 @@
 })();
 (function () {
     'use strict';
+    //TODO: Module names out of whack *****************************
+    angular.module('Tombola.Academy.Dash.Admin.GithubUsers')
+        .service('GithubRepositoryService', ['TaGithubRepositoryProxy', 'TaGithubUserProxy', 'ApiDataConverter',
+            function(taGithubRepositoryProxy, taGithubUserProxy, apiDataConverter){
+            var me= this,
+                updateCallback;
+            me.githubRepositories = [];
+            me.githubUsers = [];
+            me.newRepository = {};
+
+            me.resetNewRepository = function(){
+                me.newRepository = {
+                    repositoryname:'',
+                    description:'',
+                    githubuserid:me.githubUsers[0].id
+                };
+            };
+
+            me.getCurrentRepositories = function() {
+                taGithubRepositoryProxy.get(apiDataConverter.getJson)
+                    .then(function (data) {
+                        me.githubRepositories = _.forEach(data, function(repository){
+                            repository.username = (_.find(me.githubUsers, 'id', repository.githubuserid)).username;
+                        });
+                        if(updateCallback){
+                            updateCallback();
+                        }
+                    })
+                    .catch(function (response) {
+                        //TODO: visible error message.
+                    });
+            };
+
+            me.updateRepository = function(id, update){
+                taGithubRepositoryProxy.update(id, update)
+                    .then(function(){
+                        me.getCurrentRepositories();
+                    })
+                    .catch(function (response) {
+                        //TODO: visible error message.
+                    });
+            };
+
+            me.updateRepositoryName = function(repository){
+                me.updateRepository(repository.id, {repositoryname: repository.repositoryname});
+            };
+
+            me.updateDescription = function(repository){
+                me.updateRepository(repository.id, {description: repository.description});
+            };
+
+
+            me.addRepository = function(){
+                taGithubRepositoryProxy.add(me.newRepository)
+                    .then(function(){
+                        me.resetNewRepository
+                        ();
+                        me.getCurrentRepositories();
+                    })
+                    .catch(function (response) {
+                        //TODO: visible error message.
+                    });
+            };
+
+            me.removeRepository = function(githubrepository){
+                taGithubRepositoryProxy.remove(githubrepository.id)
+                    .then(function(){
+                        me.getCurrentRepositories();
+                    })
+                    .catch(function (response) {
+                        //TODO: visible error message.
+                    });
+            };
+
+            me.setUpdateCallback = function(callback){
+                updateCallback = callback;
+            };
+
+            taGithubUserProxy.get(apiDataConverter.getJson).then(function(data){
+                me.githubUsers = _.sortBy(data, 'username');
+                me.resetNewRepository();
+            });
+
+        }]);
+})();
+
+(function () {
+    'use strict';
     angular.module('Tombola.Academy.Dash.Admin.GithubUsers')
         .service('GithubUserService', ['TaGithubUserProxy','ApiDataConverter', function(taGithubUserProxy, apiDataConverter){
             var me= this,
@@ -770,6 +865,58 @@
         }]);
 })();
 
+(function () {
+    'use strict';
+    angular.module('Tombola.Academy.Dash.Admin.GithubUsers')
+        .controller('GithubRepositoriesController', ['$scope', 'GithubRepositoryService', function($scope, githubRepositoryService){
+            //TODO: common function
+            var validateAndUpdate = function(fieldName, updateMethodName, githubRepository){
+                if(!$scope.repoList.$dirty){
+                    return;
+                }
+                if(githubRepository[fieldName]){
+                    $scope.githubRepositoryService[updateMethodName](githubRepository);
+                }
+                else {
+                    githubRepositoryService.getCurrentRepositories();
+                }
+
+            };
+
+            $scope.githubRepositoryService = githubRepositoryService;
+
+            $scope.updateRepositoryName = function (githubRepository){
+                if(!githubRepository.repositoryname){
+                    return;
+                }
+                validateAndUpdate('repositoryname', 'updateRepositoryName', githubRepository);
+            };
+
+            $scope.updateDescription = function (githubRepository){
+                validateAndUpdate('description', 'updateDescription', githubRepository);
+            };
+
+            $scope.add = function(){
+                if(!githubRepositoryService.newRepository.repositoryname){
+                    return;
+                }
+                githubRepositoryService.addRepository();
+            };
+
+            $scope.remove = function(githubRepository){
+                githubRepositoryService.removeRepository(githubRepository);
+            };
+
+            githubRepositoryService.setUpdateCallback(function(){
+                if($scope.repoList){
+                    $scope.repoList.$setPristine();
+                }
+            });
+
+            githubRepositoryService.getCurrentRepositories();
+
+        }]);
+})();
 (function () {
     'use strict';
     angular.module('Tombola.Academy.Dash.Admin.GithubUsers')

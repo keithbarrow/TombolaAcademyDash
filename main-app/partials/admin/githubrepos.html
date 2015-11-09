@@ -1,0 +1,29 @@
+<h2>Git Hub Repositories</h2>
+<form class="admin" name="repoList">
+    <table class="admin">
+        <tr><th>Username</th><th>Repo Name</th><th>Description</th><th>&nbsp;</th></tr>
+        <tr ng-repeat="githubrepository in (githubRepositoryService.githubRepositories | orderBy:['username','repositoryname'])">
+            <td>{{githubrepository.username}}</td>
+            <td><input type="text" ng-model="githubrepository.repositoryname" required ng-blur="updateRepositoryName(githubrepository)"></td>
+            <td><input type="text" ng-model="githubrepository.description" required ng-blur="updateDescription(githubrepository)"></td>
+            <td><input type="button" value="remove" ng-click="remove(githubrepository)"></td>
+        </tr>
+    </table>
+</form>
+<form class="admin" name="newRepository">
+    <div>
+        <label for="githubuserid">Owner Name</label>
+        <select name="githubuserid" id="githubuserid" ng-model="githubRepositoryService.newRepository.githubuserid">
+            <option ng-repeat="githubUser in githubRepositoryService.githubUsers" value="{{githubUser.id}}">{{githubUser.username}}</option>
+        </select>
+    </div>
+    <div>
+        <label for="repositoryname">Repo Name</label>
+        <input id="repositoryname" type="text" ng-model="githubRepositoryService.newRepository.repositoryname" required>
+    </div>
+    <div>
+        <label for="description">Description</label>
+        <input id="description" type="text" ng-model="githubRepositoryService.newRepository.description">
+    </div>
+    <div><input type="submit" value="add" ng-click="add()"> </div>
+</form>
