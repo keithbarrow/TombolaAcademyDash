@@ -7,4 +7,5 @@ I hope to fix both those things when I get time.
 Because this runs under Apache and isn't on github yet you need to copy the .build folder to the server:
 scp -r .build keith.barrow@eutaveg-01.tombola.emea:/home/keith.barrow/www
 Assuming the target www folder exists and is empty....
-There will then be a .build folder inside the target www folder - this is hidden. Copy the contents to /var/www/html and empty the scp target out for next time.
+There will then be a .build folder inside the target www folder - this is hidden. Copy the contents to /var/www/html and empty the scp target out for next time
+https://research.csc.fi/csc-guide-copying-files-from-linux-and-mac-osx-machines-with-scp
