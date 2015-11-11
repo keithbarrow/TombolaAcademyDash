@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]>      <html lang="en" ng-app="RandomChooser" class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html lang="en" ng-app="RandomChooser" class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html lang="en" ng-app="RandomChooser" class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!--> <html lang="en" ng-app="RandomChooser" class="no-js"> <!--<![endif]-->
+<!-- held in /var/www/html -->
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Tombola Academy Random Person Chooser</title>
+    <meta name="description" content="">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap-theme.min.css">
+    <link rel="stylesheet" href="app.css">
+    <script src="scripts/bower_components/html5-boilerplate/js/vendor/modernizr-2.6.2.min.js"></script>
+</head>
+<body ng-controller="Controller" >
+    <div class="container"  style="margin-top: 50px;" >
+        <!-- Inline styles as not really part of the app, easter egg-ish-->
+        <h1>Random Person Chooser</h1>
+        <form ng-hide="chosen">
+            <textarea ng-model="people" style="min-width: 325px; min-height:200px;"></textarea>
+            <div>
+                <input type="button" value="choose" ng-click="choose()"/>
+            </div>
+        </form>
+        <div ng-if="chosen">
+            <h2>The Lucky Person Is</h2>
+            <img ng-show='reveal' alt="{{chosenName}}" title="{{chosenName}}" src="https://33.media.tumblr.com/tumblr_ljbx4qdJ3C1qexvtu.gif">
+            <iframe width="1280" height="720" src="https://www.youtube.com/embed/kfVsfOSbJY0?rel=0&amp;controls=0&amp;showinfo=0&amp;autoplay=1" frameborder="0" al$
+        </div>
+        <div>
+            <img src="images/blank.jpg" class="nyantimer">
+        </div>
+    </div>
+
+    <script src="scripts/bower_components/moment/moment.js"></script>
+    <script src="scripts/bower_components/angular/angular.js"></script>
+    <script src="scripts/bower_components/angular-ui-router/release/angular-ui-router.js"></script>
+    <script src="scripts/bower_components/ngstorage/ngStorage.min.js"></script>
+    <script>
+        angular.module('RandomChooser', [])
+                .controller('Controller', function($scope, $timeout){
+                    $scope.chosen = false;
+                    $scope.choose = function(){
+                        var people;
+                        if($scope.people) {
+                            //ng-list didn't work: apache unescapes the sequence - not fixing that!
+                            people = $scope.people.split('\n');
+                            if($scope.people.length > 1){
+                                $scope.chosen = true;
+                                //Build up....
+                                $timeout(function(){
+                                    $scope.chosenName = people[Math.floor(Math.random() * people.length)];
+                                    $scope.reveal = true;
+                                }, 1000);
+                            }
+
+                        }
+                    }
+
+                });
+    </script>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js"></script>
+
+</body>
+</html>
