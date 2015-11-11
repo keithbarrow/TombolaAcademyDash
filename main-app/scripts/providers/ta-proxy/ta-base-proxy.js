@@ -1,10 +1,10 @@
 (function () {
     'use strict';
     angular.module('Tombola.Academy.Dash.TaProxy')
-        .factory('TaBaseProxy', ['$http', '$q', 'TokenService', function($http, $q, tokenService){
+        .factory('TaBaseProxy', ['$http', '$q', 'API_URLS', 'TokenService', function($http, $q, apiUrls, tokenService){
             return function(tablename) {
                 var me = this,
-                    baseUrl = 'https://localhost:3000/api/', //TODO: inject via config
+                    baseUrl = apiUrls.apiBaseUrl,
                     getTableUrl = function() {
                         return baseUrl+ tablename;
                     },

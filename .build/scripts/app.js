@@ -1,7 +1,7 @@
 (function () {
     'use strict';
 
-    //TODO: Shift to somewhere sensible like a polyfill file...
+    //TODO: Now using lodash - deprecate?
     // Production steps of ECMA-262, Edition 5, 15.4.4.14
     if (!Array.prototype.findIndex) {
         Array.prototype.findIndex = function(predicate) {
@@ -45,6 +45,10 @@
 (function () {
     'use strict';
     angular.module('myApp')
+        .constant('API_URLS',{
+            authentication:'https://eutaveg-01.tombola.emea:3000/authenticate',
+            apiBaseUrl: 'https://eutaveg-01.tombola.emea:3000/api/'
+        })
         .config(['$locationProvider', '$stateProvider', function($locationProvider, $stateProvider) {
             $locationProvider.html5Mode(true);
             $stateProvider
@@ -80,12 +84,12 @@
 (function () {
     'use strict';
     angular.module('Tombola.Academy.Dash.Authentication')
-        .service('Authenticator', ['$http', 'TokenService', function ($http, tokenService){
+        .service('Authenticator', ['$http', 'API_URLS', 'TokenService', function ($http, apiUrls, tokenService){
         return {
             login: function(username, password){
                     var request = {
                         method: 'POST',
-                        url: 'https://localhost:3000/authenticate',
+                        url: apiUrls.authentication,
                         withCredentials: false,
                         data: {"username":username, "password":password}
                     };
@@ -286,7 +290,7 @@
 })();
 (function () {
     'use strict';
-    //TODO: refactor - Value? Filter?ß
+    //TODO: refactor - Value? Filter?
     angular.module('Tombola.Academy.Dash.TaProxy')
         .service('ApiDataConverter', [function(){
             return {
@@ -300,10 +304,10 @@
 (function () {
     'use strict';
     angular.module('Tombola.Academy.Dash.TaProxy')
-        .factory('TaBaseProxy', ['$http', '$q', 'TokenService', function($http, $q, tokenService){
+        .factory('TaBaseProxy', ['$http', '$q', 'API_URLS', 'TokenService', function($http, $q, apiUrls, tokenService){
             return function(tablename) {
                 var me = this,
-                    baseUrl = 'https://localhost:3000/api/', //TODO: inject via config
+                    baseUrl = apiUrls.apiBaseUrl,
                     getTableUrl = function() {
                         return baseUrl+ tablename;
                     },

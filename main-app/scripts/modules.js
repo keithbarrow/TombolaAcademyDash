@@ -1,7 +1,7 @@
 (function () {
     'use strict';
 
-    //TODO: Shift to somewhere sensible like a polyfill file...
+    //TODO: Now using lodash - deprecate?
     // Production steps of ECMA-262, Edition 5, 15.4.4.14
     if (!Array.prototype.findIndex) {
         Array.prototype.findIndex = function(predicate) {

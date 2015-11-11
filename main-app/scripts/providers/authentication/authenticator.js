@@ -1,12 +1,12 @@
 (function () {
     'use strict';
     angular.module('Tombola.Academy.Dash.Authentication')
-        .service('Authenticator', ['$http', 'TokenService', function ($http, tokenService){
+        .service('Authenticator', ['$http', 'API_URLS', 'TokenService', function ($http, apiUrls, tokenService){
         return {
             login: function(username, password){
                     var request = {
                         method: 'POST',
-                        url: 'https://localhost:3000/authenticate',
+                        url: apiUrls.authentication,
                         withCredentials: false,
                         data: {"username":username, "password":password}
                     };

@@ -1,6 +1,10 @@
 (function () {
     'use strict';
     angular.module('myApp')
+        .constant('API_URLS',{
+            authentication:'https://eutaveg-01.tombola.emea:3000/authenticate',
+            apiBaseUrl: 'https://eutaveg-01.tombola.emea:3000/api/'
+        })
         .config(['$locationProvider', '$stateProvider', function($locationProvider, $stateProvider) {
             $locationProvider.html5Mode(true);
             $stateProvider

@@ -1,6 +1,6 @@
 (function () {
     'use strict';
-    //TODO: refactor - Value? Filter?ß
+    //TODO: refactor - Value? Filter?
     angular.module('Tombola.Academy.Dash.TaProxy')
         .service('ApiDataConverter', [function(){
             return {
