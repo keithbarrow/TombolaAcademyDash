@@ -40,7 +40,11 @@
 <div class="container"  style="margin-top: 50px;" >
     <div></div>
   <div ui-view></div>
-
+  <div class="video" ng-if="partying()">
+    <iframe
+            src="https://www.youtube.com/embed/kfVsfOSbJY0?autoplay=1">
+    </iframe>
+  </div>
 </div>
 
 <script src="scripts/bower_components/moment/moment.js"></script>
