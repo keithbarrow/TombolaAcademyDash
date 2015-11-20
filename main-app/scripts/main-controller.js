@@ -5,7 +5,7 @@
 
             $scope.partying = function(){
                 var now = new Date();
-                return now.getDay() === 5;
+                return now.getDay() === 5 && tokenService.isAuthenticated();
             };
 
             $scope.isAuthenticated = function(){
