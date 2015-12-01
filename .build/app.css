@@ -86,6 +86,9 @@ img.avatar {
   height: 80px;
   width: 1140px;
 }
+.christmas .nyantimer {
+  background: url("images/nyan-christmas.png");
+}
 /* Chrome, Safari, Opera */
 @-webkit-keyframes moveNyan {
   0% {

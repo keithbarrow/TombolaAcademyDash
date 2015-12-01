@@ -1,21 +1,37 @@
 (function () {
     'use strict';
     angular.module('myApp')
-        .controller('MainController', ['$scope', '$state','TokenService', function($scope, $state, tokenService){
+        .controller('MainController', ['$scope', '$state', '$interval','TokenService', function($scope, $state, $interval,tokenService){
 
-            $scope.partying = function(){
-                var now = new Date();
-                return now.getDay() === 5 && tokenService.isAuthenticated();
-            };
+            var setSpecial = function(){
+                    var now = new Date();
+                    $scope.isAuthenticated = tokenService.isAuthenticated();
 
-            $scope.isAuthenticated = function(){
-                return tokenService.isAuthenticated();
-            };
+                    if(now.getMonth() === 11 || (now.getMonth() === 0 && now.getDate() <= 6)){
+                        $scope.specialClass =  'christmas';
+                    }
+
+                    else if(now.getDay()==2){ //TODO: reset to day 5 (friday)
+                        $scope.specialClass = 'friday';
+                    }
+                    else{
+                        $scope.specialClass = null;
+                    }
+                };
+
+
+
+            $scope.specialClass = null;
 
             $scope.logout = function (){
                 tokenService.resetToken();
             };
 
             $state.go('waitingPulls');
+
+            setSpecial();
+
+            $interval(setSpecial, 1000);
+
     }]);
 })();
