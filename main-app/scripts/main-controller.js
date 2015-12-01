@@ -11,7 +11,7 @@
                         $scope.specialClass =  'christmas';
                     }
 
-                    else if(now.getDay()==5){
+                    else if(now.getDay()===5){
                         $scope.specialClass = 'friday';
                     }
                     else{
