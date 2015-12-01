@@ -11,7 +11,7 @@
                         $scope.specialClass =  'christmas';
                     }
 
-                    else if(now.getDay()==2){ //TODO: reset to day 5 (friday)
+                    else if(now.getDay()==5){
                         $scope.specialClass = 'friday';
                     }
                     else{
