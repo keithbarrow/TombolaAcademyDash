@@ -1,0 +1,131 @@
+<!DOCTYPE html><!--[if lt IE 7]>
+<html lang="en" ng-app="RandomChooser" class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]--><!--[if IE 7]>
+<html lang="en" ng-app="RandomChooser" class="no-js lt-ie9 lt-ie8"> <![endif]--><!--[if IE 8]>
+<html lang="en" ng-app="RandomChooser" class="no-js lt-ie9"> <![endif]--><!--[if gt IE 8]><!-->
+<html lang="en" ng-app="RandomChooser" class="no-js"> <!--<![endif]--><!-- held in /var/www/html -->
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Tombola Academy Random Person Chooser</title>
+    <meta name="description" content="">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap-theme.min.css">
+    <link rel="stylesheet" href="app.css">
+    <script src="scripts/bower_components/html5-boilerplate/js/vendor/modernizr-2.6.2.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/3.10.1/lodash.js"></script>
+</head>
+<body ng-controller="Controller">
+    <div class="container" style="margin-top: 50px;">
+        <h1>Crypto</h1>
+        <form ng-hide="chosen">
+            <textarea ng-model="cipher" style="min-width: 325px; min-height:200px;"></textarea>
+            <div>
+                <label style="background-color:#FFFFFF" for="offset">Offset (0 for cycle)</label>
+                <input id="offset" name="offset" type="number" ng-model="offset">
+            </div>
+            <div>
+                <input type="button" value="find" ng-click="find()" min="0" max="25"/>
+                <input type="button" value="decode" ng-click="decode()" min="0" max="25"/>
+                <input type="button" value="reset" ng-click="reset()" min="0" max="25"/>
+            </div>
+            <div ng-show="tests">
+                <table>
+                    <thead>
+                        <tr>
+                            <td>Offset</td>
+                            <td>Decode</td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr ng-repeat="decode in tests">
+                            <td ng-click="chooseOffset($index +1 )">{{$index +1 }}</td>
+                            <td ng-click="chooseOffset($index +1 )">{{decode}}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div ng-show="decoded" style="background-color:#AAFFFF">
+                {{decoded}}
+            </div>
+        </form>
+    </div>
+    <script src="scripts/bower_components/moment/moment.js"></script>
+    <script src="scripts/bower_components/angular/angular.js"></script>
+    <script src="scripts/bower_components/angular-ui-router/release/angular-ui-router.js"></script>
+    <script src="scripts/bower_components/ngstorage/ngStorage.min.js"></script>
+    <script>
+        angular.module('RandomChooser', [])
+                .controller('Controller', function ($scope) {
+                    var keepInRange = function (newCode, maxValue)
+                    {
+                        if (newCode <= maxValue) {
+                            return newCode;
+                        }
+                        return keepInRange(newCode - 26, maxValue);
+                    },
+                    decipherChar = function (oldChar) {
+                        var alphaLowerRegex = /^[a-z]$/,
+                                alphaUpperRegex = /^[A-Z]$/,
+                                code = oldChar.charCodeAt(0),
+                                newCode = code + $scope.offset;
+
+                        if (alphaLowerRegex.test(oldChar)) {
+                            return String.fromCharCode(keepInRange(newCode,122));
+                        }
+
+                        if (alphaUpperRegex.test(oldChar)) {
+                            return String.fromCharCode(keepInRange(newCode, 90));
+                        }
+                        return oldChar;
+                    },
+                    decipherMessage = function(){
+                        var i;
+                        var decipher = '';
+                        for (i = 0; i < $scope.cipher.length; i++) {
+                            var newChar = decipherChar($scope.cipher[i]);
+                            decipher = decipher + newChar;
+                        }
+                        return decipher;
+                    };
+
+
+                    $scope.offset = 1;
+                    $scope.cipher = 'Hello, Sailor boy XxYzZz';
+                    $scope.tests;
+                    $scope.decoded='';
+
+                    $scope.find = function () {
+                        var i,
+                            tests = [];
+                        $scope.tests=[];
+                        $scope.decoded='';
+                        for(i=1; i <=25; i++){
+                            $scope.offset = i;
+                            tests.push(decipherMessage());
+                        }
+                        $scope.tests = tests;
+                    };
+
+                    $scope.reset = function () {
+                        $scope.offset = 1;
+                        $scope.tests=null;
+                        $scope.decoded = '';
+                    };
+
+                    $scope.chooseOffset = function(offset){
+                        $scope.offset = offset;
+                    };
+
+                    $scope.decode=function(){
+                        $scope.tests=[];
+                        $scope.decoded =  decipherMessage();
+                    };
+
+
+                });
+    </script>
+</body>
+</html>
+

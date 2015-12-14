@@ -33,6 +33,7 @@
     angular.module('Tombola.Academy.Dash.Admin.GithubUsers', ['Tombola.Academy.Dash.TaProxy']);
     angular.module('Tombola.Academy.Dash.WaitingPulls', ['Tombola.Academy.Dash.GithubProxy', 'Tombola.Academy.Dash.TaProxy']);
     angular.module('Tombola.Academy.Dash.Stats', ['Tombola.Academy.Dash.GithubProxy', 'Tombola.Academy.Dash.TaProxy']);
+    angular.module('Tombola.Academy.Dash.Pixi', []);
 
     angular.module('myApp', [
         'ui.router',
@@ -40,7 +41,9 @@
         'Tombola.Academy.Dash.Authentication',
         'Tombola.Academy.Dash.WaitingPulls',
         'Tombola.Academy.Dash.Stats',
-        'Tombola.Academy.Dash.Admin.GithubUsers']);
+        'Tombola.Academy.Dash.Admin.GithubUsers',
+        'Tombola.Academy.Dash.Pixi'
+    ]);
 })();
 (function () {
     'use strict';
@@ -493,7 +496,6 @@
                             }
                             else if(waitingPullsResults[i].pullRequests){
                                 waitingPullsResults[i].pullRequests = _.sortBy(waitingPullsResults[i].pullRequests, 'created');
-                                console.log(waitingPullsResults[i].pullRequests);
                                 addWaitingPull(waitingPullsResults[i]);
                             }
                         }
@@ -987,7 +989,7 @@
                         $scope.specialClass =  'christmas';
                     }
 
-                    else if(now.getDay()==2){ //TODO: reset to day 5 (friday)
+                    else if(now.getDay()===5){
                         $scope.specialClass = 'friday';
                     }
                     else{
