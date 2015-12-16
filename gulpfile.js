@@ -1,4 +1,7 @@
-var gulp = require('gulp'),
+var config = {
+        production:true
+    };
+    gulp = require('gulp'),
     jshint = require('gulp-jshint'),
     clean = require('gulp-clean'),
     copy = require('gulp-copy'),
@@ -8,6 +11,10 @@ var gulp = require('gulp'),
     watch = require('gulp-watch');
 
 
+
+gulp.task('set-development', function(){
+   config.production = false;
+});
 
 gulp.task('lint', function() {
     return gulp.src('./main-app/**/*.js')
@@ -48,18 +55,18 @@ gulp.task('copy-partial-html', function(){
 });
 
 gulp.task('concat-scripts', function() {
+    var configFile = config.production ? './main-app/scripts/app-config.js' : './main-app/scripts/app-dev-config.js';
+    console.log(config);
     return gulp.src(['./main-app/scripts/modules.js',
+        configFile,
         './main-app/scripts/module-config.js',
-
         './main-app/scripts/providers/authentication/**/*.js',
         './main-app/scripts/providers/github-proxy/**/*.js',
         './main-app/scripts/providers/ta-proxy/*.js',
         './main-app/scripts/providers/waiting-pulls/*.js',
         './main-app/scripts/providers/stats/*.js',
-
         './main-app/scripts/**/services/*.js',
         './main-app/scripts/**/controllers/*.js',
-
         './main-app/scripts/module-run.js'
         ])
         .pipe(concat('app.js'))
@@ -80,5 +87,7 @@ gulp.task('server', function () {
 
 
 gulp.task('nostart',['lint', 'less', 'copy-bower', 'copy-images', 'copy-main-html', 'copy-partial-html', 'concat-scripts'])
-
 gulp.task('default', ['nostart', 'server']);
+
+gulp.task('devnostart',['set-development', 'nostart']);
+gulp.task('devstart',['set-development', 'default']);
