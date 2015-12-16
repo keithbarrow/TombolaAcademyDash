@@ -1,6 +1,6 @@
 (function () {
     'use strict';
-    angular.module('myApp')
+    angular.module('Tombola.Academy.Dash')
         .run(['$rootScope', '$state','TokenService', function($rootScope, $state, tokenService){
             $rootScope.$on('$stateChangeStart', function(event, toState){
                 //TODO: roles for admin

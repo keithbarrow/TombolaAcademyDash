@@ -27,21 +27,25 @@
     }
 
 
+    angular.module('Tombola.Academy.Dash.Core', []);
     angular.module('Tombola.Academy.Dash.Authentication', []);
     angular.module('Tombola.Academy.Dash.GithubProxy', []);
     angular.module('Tombola.Academy.Dash.TaProxy', ['Tombola.Academy.Dash.Authentication']);
     angular.module('Tombola.Academy.Dash.Admin.GithubUsers', ['Tombola.Academy.Dash.TaProxy']);
     angular.module('Tombola.Academy.Dash.WaitingPulls', ['Tombola.Academy.Dash.GithubProxy', 'Tombola.Academy.Dash.TaProxy']);
     angular.module('Tombola.Academy.Dash.Stats', ['Tombola.Academy.Dash.GithubProxy', 'Tombola.Academy.Dash.TaProxy']);
-    angular.module('Tombola.Academy.Dash.Pixi', []);
+    angular.module('Tombola.Academy.Dash.Pixi', ['Tombola.Academy.Dash.Core']);
+    angular.module('Tombola.Academy.Dash.Main',['Tombola.Academy.Dash.Core', 'Tombola.Academy.Dash.Authentication']);
 
-    angular.module('myApp', [
+    angular.module('Tombola.Academy.Dash', [
         'ui.router',
+        'Tombola.Academy.Dash.Core',
         'Tombola.Academy.Dash.TaProxy',
         'Tombola.Academy.Dash.Authentication',
         'Tombola.Academy.Dash.WaitingPulls',
         'Tombola.Academy.Dash.Stats',
         'Tombola.Academy.Dash.Admin.GithubUsers',
-        'Tombola.Academy.Dash.Pixi'
+        'Tombola.Academy.Dash.Pixi',
+        'Tombola.Academy.Dash.Main'
     ]);
 })();

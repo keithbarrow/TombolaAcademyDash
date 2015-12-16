@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<!--[if lt IE 7]>      <html lang="en" ng-app="myApp" class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
-<!--[if IE 7]>         <html lang="en" ng-app="myApp" class="no-js lt-ie9 lt-ie8"> <![endif]-->
-<!--[if IE 8]>         <html lang="en" ng-app="myApp" class="no-js lt-ie9"> <![endif]-->
-<!--[if gt IE 8]><!--> <html lang="en" ng-app="myApp" class="no-js"> <!--<![endif]-->
+<!--[if lt IE 7]>      <html lang="en" ng-app="Tombola.Academy.Dash" class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html lang="en" ng-app="Tombola.Academy.Dash" class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html lang="en" ng-app="Tombola.Academy.Dash" class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!--> <html lang="en" ng-app="Tombola.Academy.Dash" class="no-js"> <!--<![endif]-->
 <!-- held in /var/www/html -->
 <head>
   <meta charset="utf-8">
@@ -17,6 +17,7 @@
   <link rel="stylesheet" href="app.css">
   <script src="scripts/bower_components/html5-boilerplate/js/vendor/modernizr-2.6.2.min.js"></script>
   <script src="scripts/bower_components/lodash/lodash.min.js"></script>
+  <script src="scripts/bower_components/pixi.js/bin/pixi.min.js"></script>
 </head>
 <body ng-controller="MainController" ng-class="specialClass">
 <div>
@@ -42,10 +43,10 @@
   <div ui-view></div>
   <div class="video" ng-if="isAuthenticated">
     <iframe ng-if="specialClass === 'christmas'"
-            src="https://www.youtube.com/embed/videoseries?list=PLvCAdHtM7JyNtk6SGfLCANxAGq4hStBsO&autoplay=1">
+            src="https://www.youtube.com/embed/videoseries?list=PLvCAdHtM7JyNtk6SGfLCANxAGq4hStBsO&autoplay=0">
     </iframe>
     <iframe ng-if="specialClass === 'friday'"
-            src="https://www.youtube.com/embed/kfVsfOSbJY0?autoplay=1">
+            src="https://www.youtube.com/embed/kfVsfOSbJY0?autoplay=0">
     </iframe>
   </div>
 </div>
